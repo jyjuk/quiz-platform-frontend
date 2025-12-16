@@ -26,3 +26,8 @@ dist-ssr
 .env
 .env.local
 .env.production
+.env.development
+.env.docker
+
+# Docker personal overrides
+docker-compose.override.yml
