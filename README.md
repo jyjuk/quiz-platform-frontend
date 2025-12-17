@@ -13,20 +13,17 @@ React + TypeScript + Material UI application for Quiz Management System.
 ### Installation
 
 1. Clone the repository:
-
 ```bash
 git clone git@github.com:jyjuk/quiz-platform-frontend.git
 cd quiz-platform-frontend
 ```
 
 2. Install dependencies:
-
 ```bash
 npm install
 ```
 
 3. Create `.env` file from `.env.sample`:
-
 ```bash
 cp .env.sample .env
 ```
@@ -36,7 +33,6 @@ cp .env.sample .env
 ### Running the Application
 
 **Development mode:**
-
 ```bash
 npm run dev
 ```
@@ -44,14 +40,12 @@ npm run dev
 The application will be available at `http://localhost:5173`
 
 **Production build:**
-
 ```bash
 npm run build
 npm run preview
 ```
 
 ### Code Formatting
-
 ```bash
 # Format code
 npm run format
@@ -61,17 +55,32 @@ npm run format:check
 ```
 
 ## 📁 Project Structure
-
 ```
 src/
-├── api/            # API services and HTTP clients
-├── components/     # Reusable UI components
-├── constants/      # Application constants
-├── pages/          # Page components
-├── store/          # Global state management
-├── types/          # TypeScript type definitions
-├── utils/          # Helper functions
-└── theme.ts        # Material UI theme configuration
+├── api/                         # API services and HTTP clients
+├── components/                  # Reusable UI components
+│   ├── AppBar.tsx               # Navigation bar with responsive menu
+│   ├── Footer.tsx               # Application footer
+│   ├── Layout.tsx               # Page layout wrapper
+│   ├── Modal.tsx                # Universal modal dialog
+│   ├── PageContainer.tsx        # Consistent page container
+│   ├── UserCard.tsx             # User display card
+│   └── CompanyCard.tsx          # Company display card
+├── constants/                   # Application constants
+├── pages/                       # Page components
+│   ├── HomePage.tsx             # Landing page with quick links
+│   ├── AboutPage.tsx            # Platform information
+│   ├── UsersListPage.tsx        # Users list with search
+│   ├── UserProfilePage.tsx      # User details and owned companies
+│   ├── CompaniesListPage.tsx    # Companies list with filters
+│   ├── CompanyProfilePage.tsx   # Company details
+│   └── NotFoundPage.tsx         # 404 error page
+├── store/                       # Global state management
+├── types/                       # TypeScript type definitions
+│   └── index.ts                 # User, Company, Auth types
+├── utils/                       # Helper functions
+│   └── mockData.ts              # Mock data matching backend structure
+└── theme.ts                     # Material UI theme configuration
 ```
 
 ## 🛠️ Tech Stack
@@ -81,14 +90,13 @@ src/
 - **Vite** - Build tool and dev server
 - **Material UI** - Component library
 - **React Router** - Client-side routing
-- **Axios** - HTTP client
+- **Axios** - HTTP client (ready for API integration)
 
 ## 📝 Environment Variables
 
 See `.env.sample` for required environment variables.
 
 **Example `.env` file:**
-
 ```env
 VITE_API_BASE_URL=http://localhost:8000
 VITE_WS_URL=ws://localhost:8000
@@ -101,10 +109,147 @@ VITE_APP_VERSION=1.0.0
 Backend repository: [Quiz Platform Backend](https://github.com/jyjuk/backend-internship)
 
 **Local Backend:**
-
 - API: `http://localhost:8000`
 - API Documentation: `http://localhost:8000/docs`
 - OpenAPI Schema: `http://localhost:8000/openapi.json`
+
+## 📱 Application Features
+
+### Pages
+
+#### Home Page
+- Welcome screen with quick navigation
+- Three main sections: Users, Companies, About
+- Material UI cards with hover effects
+- Responsive layout
+
+#### About Page
+- Platform overview and mission
+- Key features showcase (4 feature cards)
+- Technology stack information
+- Modern grid layout with icons
+
+#### Users Management
+- **Users List**: 
+  - Search by username or email
+  - User cards with avatar, status badge
+  - Click to view detailed profile
+  - Shows 8 mock users
+- **User Profile**: 
+  - Detailed user information
+  - Active/Inactive status badge
+  - List of owned companies
+  - Account actions (delete demo with modal)
+
+#### Companies Management
+- **Companies List**: 
+  - Search by name or description
+  - Grid/List view toggle
+  - Public/Private visibility badges
+  - Shows 8 mock companies
+- **Company Profile**: 
+  - Company details and description
+  - Owner information with navigation
+  - Created/Updated timestamps
+  - Quick action buttons (coming soon)
+
+#### Error Handling
+- **404 Page**: User-friendly error message with navigation options
+
+### Components
+
+#### Reusable Components
+
+**Layout Components:**
+- `Layout` - Main layout wrapper with header, content, footer
+- `AppBar` - Responsive navigation with mobile drawer menu
+- `Footer` - Application footer with copyright and links
+- `PageContainer` - Consistent page wrapper with max-width
+
+**UI Components:**
+- `Modal` - Universal dialog component with customizable:
+  - Title, content, actions
+  - Configurable max-width
+  - Close button
+  - Used in User Profile for delete confirmation
+- `UserCard` - User display card with:
+  - Avatar with username initial
+  - Email and status badge
+  - Click navigation to profile
+  - Hover effects
+- `CompanyCard` - Company display card with:
+  - Company icon and name
+  - Owner name
+  - Visibility badge
+  - Description preview
+  - Created date
+  - Click navigation to profile
+
+### Mock Data
+
+Application uses mock data matching exact backend API structure for development:
+
+**Users (8 total):**
+```typescript
+{
+  id: string;              // UUID format
+  username: string;
+  email: string;
+  is_active: boolean;      // Active/Inactive status
+  created_at: string;      // ISO datetime
+  updated_at: string;      // ISO datetime
+}
+```
+
+**Companies (8 total):**
+```typescript
+{
+  id: string;              // UUID format
+  name: string;
+  description: string | null;
+  is_visible: boolean;     // Public/Private
+  owner_id: string;        // UUID reference to user
+  created_at: string;      // ISO datetime
+  updated_at: string;      // ISO datetime
+}
+```
+
+**Helper Functions:**
+- `getUserById(id)` - Get user by UUID
+- `getCompanyById(id)` - Get company by UUID
+- `getCompaniesByOwner(ownerId)` - Get user's companies
+- `getVisibleCompanies()` - Get public companies
+- `searchUsers(query)` - Search users by name/email
+- `searchCompanies(query)` - Search companies by name/description
+
+**Easy API Integration:**
+Mock data uses exact backend structure (UUIDs, snake_case) for seamless API migration.
+
+### Routing
+
+Application uses React Router v6 with nested routes:
+```
+/ (Layout)
+├── / (Home)
+├── /about (About)
+├── /users (Users List)
+├── /users/:id (User Profile)
+├── /companies (Companies List)
+├── /companies/:id (Company Profile)
+└── /* (404 Not Found)
+```
+
+### UI/UX Features
+
+- **Material UI Design System** - Consistent theming and components
+- **Responsive Design** - Mobile-first approach with breakpoints
+- **Mobile Navigation** - Drawer menu for small screens
+- **Search Functionality** - Real-time filtering on list pages
+- **View Toggle** - Grid/List view for companies
+- **Hover Effects** - Card animations on hover
+- **Loading States** - Ready for async data loading
+- **Error Handling** - 404 page with navigation
+- **Accessibility** - Semantic HTML and ARIA labels
 
 ## 🐳 Docker
 
@@ -116,7 +261,6 @@ Backend repository: [Quiz Platform Backend](https://github.com/jyjuk/backend-int
 ### Building Docker Image
 
 Build the production Docker image:
-
 ```bash
 docker build -t quiz-platform-frontend .
 ```
@@ -126,7 +270,6 @@ docker build -t quiz-platform-frontend .
 #### Option 1: Frontend Only
 
 Run only the frontend container:
-
 ```bash
 docker run -d -p 3000:80 --name quiz-platform-frontend quiz-platform-frontend
 ```
@@ -138,7 +281,6 @@ The application will be available at `http://localhost:3000`
 #### Option 2: Frontend with Docker Compose
 
 Run frontend with docker-compose:
-
 ```bash
 docker-compose up -d
 ```
@@ -146,19 +288,16 @@ docker-compose up -d
 This starts only the frontend container on port 3000.
 
 **View logs:**
-
 ```bash
 docker-compose logs -f frontend
 ```
 
 **Stop services:**
-
 ```bash
 docker-compose down
 ```
 
 **Rebuild and restart:**
-
 ```bash
 docker-compose up -d --build
 ```
@@ -166,13 +305,11 @@ docker-compose up -d --build
 #### Option 3: Full Stack (Frontend + Backend + PostgreSQL + Redis)
 
 Run the complete application stack:
-
 ```bash
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
 This will start:
-
 - **Frontend**: `http://localhost:3000`
 - **Backend API**: `http://localhost:8000`
 - **API Docs**: `http://localhost:8000/docs`
@@ -180,24 +317,21 @@ This will start:
 - **Redis**: `localhost:6379`
 
 **Prerequisites for Full Stack:**
-
 - Backend project must be in `../../backend_internship/` directory
 - Backend Dockerfile must exist
+- `.env.docker` file configured (see below)
 
 **View all logs:**
-
 ```bash
 docker-compose -f docker-compose.dev.yml logs -f
 ```
 
 **Stop all services:**
-
 ```bash
 docker-compose -f docker-compose.dev.yml down
 ```
 
 **Stop and remove volumes:**
-
 ```bash
 docker-compose -f docker-compose.dev.yml down -v
 ```
@@ -205,7 +339,6 @@ docker-compose -f docker-compose.dev.yml down -v
 ### Docker Commands Reference
 
 #### Basic Commands
-
 ```bash
 # Build image
 docker build -t quiz-platform-frontend .
@@ -233,7 +366,6 @@ docker inspect quiz-platform-frontend
 ```
 
 #### Docker Compose Commands
-
 ```bash
 # Start services (frontend only)
 docker-compose up -d
@@ -270,7 +402,6 @@ docker-compose restart frontend
 ```
 
 #### Cleanup Commands
-
 ```bash
 # Remove all stopped containers
 docker container prune
@@ -296,21 +427,18 @@ docker ps -a
 The Dockerfile uses a multi-stage build approach for optimal production deployment:
 
 **Stage 1: Builder (Node.js)**
-
 - Base image: `node:20-alpine`
 - Installs dependencies with `npm ci`
 - Builds production bundle with `npm run build`
 - Optimizes assets for production
 
 **Stage 2: Production (Nginx)**
-
 - Base image: `nginx:alpine` (~25MB)
 - Copies built static files from builder stage
 - Configured with custom nginx.conf
 - Serves optimized static content
 
 **Benefits:**
-
 - ✅ Minimal image size (~25MB vs ~1GB with Node.js)
 - ✅ No development dependencies in production
 - ✅ Fast container startup time
@@ -325,10 +453,10 @@ The included `nginx.conf` provides:
 - **SPA Routing Support**: Handles React Router client-side routing with fallback to index.html
 - **Gzip Compression**: Reduces file sizes by ~70% for faster load times
 - **Static Asset Caching**: 1-year cache headers for JS/CSS/images
-- **Security Headers**:
-    - `X-Frame-Options: SAMEORIGIN` - Prevents clickjacking
-    - `X-Content-Type-Options: nosniff` - Prevents MIME sniffing
-    - `X-XSS-Protection: 1; mode=block` - XSS protection
+- **Security Headers**: 
+  - `X-Frame-Options: SAMEORIGIN` - Prevents clickjacking
+  - `X-Content-Type-Options: nosniff` - Prevents MIME sniffing
+  - `X-XSS-Protection: 1; mode=block` - XSS protection
 
 ### Network Configuration
 
@@ -342,21 +470,17 @@ Both docker-compose files use the `quiz-network` bridge network:
 
 ### Environment Variables in Docker
 
-### Environment Variables in Docker
-
 **For Frontend Development:**
 Environment variables are loaded from `.env` file during build time.
 
 **For Full Stack Development (`docker-compose.dev.yml`):**
 
 1. Create `.env.docker` from template:
-
 ```bash
 cp .env.docker.sample .env.docker
 ```
 
 2. Fill in the values (or use defaults for local development):
-
 ```env
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_secure_password
@@ -368,13 +492,11 @@ SECRET_KEY=your-general-secret-key
 ```
 
 3. Start the full stack:
-
 ```bash
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
 **Security Notes:**
-
 - ✅ `.env.docker.sample` is committed to Git (template with empty values)
 - ❌ `.env.docker` is in `.gitignore` (contains real credentials)
 - ⚠️ Never commit files with real passwords or secrets
@@ -382,7 +504,6 @@ docker-compose -f docker-compose.dev.yml up -d
 
 **For Production:**
 Create `.env.production` file for frontend build:
-
 ```env
 VITE_API_BASE_URL=https://api.yourdomain.com
 VITE_WS_URL=wss://api.yourdomain.com
@@ -391,13 +512,11 @@ VITE_APP_VERSION=1.0.0
 ```
 
 Build with production environment:
-
 ```bash
 docker build --build-arg NODE_ENV=production -t quiz-platform-frontend:prod .
 ```
 
-**Important:**
-
+**Important:** 
 - Vite bakes frontend environment variables into the build at build time, not runtime
 - Backend environment variables are loaded at runtime from `.env.docker`
 
@@ -406,26 +525,22 @@ docker build --build-arg NODE_ENV=production -t quiz-platform-frontend:prod .
 Configure backend URL based on your deployment:
 
 **Option 1: Backend on Host Machine**
-
 ```env
 VITE_API_BASE_URL=http://host.docker.internal:8000
 ```
 
 **Option 2: Backend in Same Docker Network**
-
 ```env
 VITE_API_BASE_URL=http://backend:8000
 ```
 
 **Option 3: Full Stack with docker-compose.dev.yml**
-
 - Frontend automatically connects to `http://backend:8000` within Docker network
 - Accessible externally at `http://localhost:8000`
 
 ### Directory Structure Note
 
 The `docker-compose.dev.yml` is configured for this directory structure:
-
 ```
 C:\
 ├── backend_internship\          # Backend project
@@ -434,7 +549,6 @@ C:\
 ```
 
 If your directory structure is different, update the `context` path in `docker-compose.dev.yml`:
-
 ```yaml
 backend:
   build:
@@ -444,7 +558,6 @@ backend:
 ### Troubleshooting
 
 **Frontend can't connect to backend:**
-
 ```bash
 # Check if backend is running
 docker ps | findstr backend
@@ -458,7 +571,6 @@ wget -O- http://backend:8000
 ```
 
 **Build fails:**
-
 ```bash
 # Clean Docker cache
 docker builder prune
@@ -471,7 +583,6 @@ docker system df
 ```
 
 **Port already in use:**
-
 ```bash
 # Check what's using the port (Windows)
 netstat -ano | findstr :3000
@@ -481,7 +592,6 @@ docker run -d -p 3001:80 quiz-platform-frontend
 ```
 
 **Container exits immediately:**
-
 ```bash
 # Check container logs
 docker logs quiz-platform-frontend
@@ -491,7 +601,6 @@ docker run -p 3000:80 quiz-platform-frontend
 ```
 
 **Changes not reflecting:**
-
 ```bash
 # Rebuild with --no-cache
 docker-compose up -d --build --no-cache
@@ -503,7 +612,6 @@ docker-compose -f docker-compose.dev.yml up -d --build --no-cache
 ### Verified Working Configuration
 
 **Successfully tested on:**
-
 - Operating System: Windows 11
 - Docker Desktop: Latest version
 - Node.js: 22.11.0
@@ -511,7 +619,6 @@ docker-compose -f docker-compose.dev.yml up -d --build --no-cache
 - Python: 3.12 (for backend)
 
 **Container sizes:**
-
 - Frontend: ~25MB (nginx:alpine)
 - Backend: ~200MB (python:3.12-slim)
 - PostgreSQL: ~250MB (postgres:16-alpine)
@@ -519,13 +626,11 @@ docker-compose -f docker-compose.dev.yml up -d --build --no-cache
 - **Total stack**: ~515MB
 
 **Startup time:**
-
 - Full stack (first time): ~30-40 seconds
 - Full stack (cached): ~10 seconds
 - Frontend only: ~5 seconds
 
 **Build time:**
-
 - Frontend: ~20-30 seconds
 - Backend: ~10-15 seconds (cached dependencies)
 
@@ -534,32 +639,28 @@ docker-compose -f docker-compose.dev.yml up -d --build --no-cache
 For production deployment:
 
 1. **Build production image:**
-
 ```bash
 docker build --build-arg NODE_ENV=production -t quiz-platform-frontend:prod .
 ```
 
 2. **Tag for registry:**
-
 ```bash
 docker tag quiz-platform-frontend:prod your-registry/quiz-platform-frontend:latest
 ```
 
 3. **Push to registry:**
-
 ```bash
 docker push your-registry/quiz-platform-frontend:latest
 ```
 
 4. **Deploy to orchestration platform:**
-    - AWS ECS/Fargate
-    - Google Cloud Run
-    - Azure Container Instances
-    - Kubernetes
-    - Docker Swarm
+   - AWS ECS/Fargate
+   - Google Cloud Run
+   - Azure Container Instances
+   - Kubernetes
+   - Docker Swarm
 
 **Production docker-compose example:**
-
 ```yaml
 services:
   frontend:
@@ -570,14 +671,13 @@ services:
       - NODE_ENV=production
     restart: always
     healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80" ]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
       interval: 30s
       timeout: 10s
       retries: 3
 ```
 
 ## 🧪 Testing
-
 ```bash
 # Run tests (when implemented)
 npm test
@@ -590,7 +690,6 @@ npm run test:watch
 ```
 
 ## 📦 Building for Production
-
 ```bash
 # Create production build
 npm run build
@@ -608,69 +707,9 @@ npm run preview
 - **TypeScript**: Strict type checking
 
 **Format before commit:**
-
 ```bash
 npm run format
 ```
-
-## 🔧 Development Workflow
-
-1. Create a new branch from `develop`:
-
-```bash
-git checkout develop
-git pull origin develop
-git checkout -b FE-X-feature-name
-```
-
-2. Make your changes and commit:
-
-```bash
-npm run format
-git add .
-git commit -m "FE-X: Description of changes"
-```
-
-3. Push your branch:
-
-```bash
-git push -u origin FE-X-feature-name
-```
-
-4. Create Pull Request on GitHub:
-    - Base: `develop`
-    - Compare: `FE-X-feature-name`
-    - Add reviewers (mentors)
-    - Set yourself as assignee
-
-5. Wait for code review and approval
-
-6. After approval, mentor will merge the PR
-
-**Important:** Never merge your own PRs. Always wait for mentor approval.
-
-## 📚 Available Scripts
-
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run lint         # Lint code with ESLint
-npm run format       # Format code with Prettier
-npm run format:check # Check code formatting
-```
-
-## 🤝 Contributing
-
-1. Follow the Git workflow described above
-2. Use conventional commit messages
-3. Format code before committing
-4. Write tests for new features
-5. Update documentation as needed
-
-## 📄 License
-
-This project is part of an internship program.
 
 ## 👥 Authors
 
