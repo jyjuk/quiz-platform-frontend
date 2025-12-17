@@ -1,0 +1,70 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quiz-platform-frontend-dev
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - quiz-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ../../backend_internship
+      dockerfile: Dockerfile
+    container_name: quiz-platform-backend-dev
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    env_file:
+      - .env.docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ../../backend_internship/app:/app/app
+    networks:
+      - quiz-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: quiz-platform-postgres-dev
+    env_file:
+      - .env.docker
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - quiz-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: quiz-platform-redis-dev
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - quiz-network
+    restart: unless-stopped
+
+networks:
+  quiz-network:
+    driver: bridge
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
