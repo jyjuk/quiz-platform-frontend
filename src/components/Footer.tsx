@@ -1,6 +1,9 @@
 import { Box, Container, Typography, Link } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
+  const { t } = useTranslation();
+
   return (
     <Box
       component="footer"
@@ -13,11 +16,10 @@ const Footer = () => {
     >
       <Container maxWidth="lg">
         <Typography variant="body2" color="text.secondary" align="center">
-          © {new Date().getFullYear()} {import.meta.env.VITE_APP_NAME || 'Quiz Platform'}. All
-          rights reserved.
+          © {new Date().getFullYear()} {t('common.appName')}. {t('footer.copyright')}
         </Typography>
         <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
-          Built with React, TypeScript, and Material UI |{' '}
+          {t('footer.builtWith')} |{' '}
           <Link
             href="https://github.com/jyjuk/quiz-platform-frontend"
             target="_blank"

@@ -11,6 +11,7 @@ import Modal from '../components/Modal';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getUserById, getCompaniesByOwner } from '../utils/mockData';
 import CompanyCard from '../components/CompanyCard';
+import { useTranslation } from 'react-i18next';
 
 const UserProfilePage = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,19 +19,20 @@ const UserProfilePage = () => {
   const user = id ? getUserById(id) : undefined;
   const userCompanies = id ? getCompaniesByOwner(id) : [];
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const { t } = useTranslation();
 
   if (!user) {
     return (
       <PageContainer>
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography variant="h4" gutterBottom>
-            User Not Found
+            {t('users.userNotFound')}
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph>
-            The user you're looking for doesn't exist.
+            {t('users.userNotFoundDesc')}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/users')}>
-            Back to Users
+            {t('users.backToUsers')}
           </Button>
         </Box>
       </PageContainer>
@@ -46,7 +48,7 @@ const UserProfilePage = () => {
   return (
     <PageContainer>
       <Button variant="outlined" onClick={() => navigate('/users')} sx={{ mb: 3 }}>
-        ← Back to Users
+        ← {t('users.backToUsers')}
       </Button>
 
       <Paper sx={{ p: 4, mb: 4 }}>
@@ -60,7 +62,7 @@ const UserProfilePage = () => {
             </Typography>
             <Chip
               icon={user.is_active ? <CheckCircleIcon /> : <CancelIcon />}
-              label={user.is_active ? 'Active' : 'Inactive'}
+              label={user.is_active ? t('users.active') : t('users.inactive')}
               color={user.is_active ? 'success' : 'default'}
             />
           </Box>
@@ -72,7 +74,7 @@ const UserProfilePage = () => {
               <EmailIcon sx={{ mr: 1, color: 'text.secondary' }} />
               <Box>
                 <Typography variant="caption" color="text.secondary" display="block">
-                  Email
+                  {t('users.email')}
                 </Typography>
                 <Typography variant="body1">{user.email}</Typography>
               </Box>
@@ -84,7 +86,7 @@ const UserProfilePage = () => {
               <CalendarTodayIcon sx={{ mr: 1, color: 'text.secondary' }} />
               <Box>
                 <Typography variant="caption" color="text.secondary" display="block">
-                  Member Since
+                  {t('users.memberSince')}
                 </Typography>
                 <Typography variant="body1">
                   {new Date(user.created_at).toLocaleDateString()}
@@ -96,11 +98,11 @@ const UserProfilePage = () => {
 
         <Box sx={{ mt: 3, pt: 3, borderTop: 1, borderColor: 'divider' }}>
           <Typography variant="h6" gutterBottom>
-            Account Actions
+            {t('users.accountActions')}
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button variant="outlined" disabled>
-              Edit Profile (Coming Soon)
+              {t('users.editProfile')}
             </Button>
             <Button
               variant="outlined"
@@ -108,7 +110,7 @@ const UserProfilePage = () => {
               startIcon={<DeleteIcon />}
               onClick={() => setDeleteModalOpen(true)}
             >
-              Delete Account (Demo)
+              {t('users.deleteAccount')}
             </Button>
           </Box>
         </Box>
@@ -116,7 +118,9 @@ const UserProfilePage = () => {
 
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <BusinessIcon color="primary" />
-        <Typography variant="h5">Companies Owned ({userCompanies.length})</Typography>
+        <Typography variant="h5">
+          {t('users.companiesOwned')} ({userCompanies.length})
+        </Typography>
       </Box>
 
       {userCompanies.length > 0 ? (
@@ -130,32 +134,31 @@ const UserProfilePage = () => {
       ) : (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography variant="body1" color="text.secondary">
-            This user hasn't created any companies yet.
+            {t('users.noCompanies')}
           </Typography>
         </Paper>
       )}
 
-      {/* Delete Account Confirmation Modal */}
       <Modal
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title="Delete Account"
+        title={t('users.deleteAccountTitle')}
         maxWidth="sm"
         actions={
           <>
-            <Button onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button onClick={() => setDeleteModalOpen(false)}>{t('common.cancel')}</Button>
             <Button variant="contained" color="error" onClick={handleDeleteAccount}>
-              Delete Account
+              {t('common.delete')}
             </Button>
           </>
         }
       >
         <Box>
           <Typography variant="body1" paragraph>
-            Are you sure you want to delete the account <strong>{user.username}</strong>?
+            {t('users.deleteAccountConfirm')} <strong>{user.username}</strong>?
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            This action cannot be undone. All associated data will be permanently deleted.
+            {t('users.deleteAccountWarning')}
           </Typography>
           <Box
             sx={{
@@ -167,7 +170,7 @@ const UserProfilePage = () => {
             }}
           >
             <Typography variant="body2">
-              <strong>Warning:</strong> This is a demo only. No actual deletion will occur.
+              <strong>Warning:</strong> {t('users.deleteAccountDemo')}
             </Typography>
           </Box>
         </Box>

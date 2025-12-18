@@ -1,6 +1,7 @@
 import { Card, CardContent, Typography, Avatar, Chip, Box } from '@mui/material';
 import type { User } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface UserCardProps {
   user: User;
@@ -8,6 +9,7 @@ interface UserCardProps {
 
 const UserCard = ({ user }: UserCardProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleClick = () => {
     navigate(`/users/${user.id}`);
@@ -37,13 +39,13 @@ const UserCard = ({ user }: UserCardProps) => {
             </Typography>
           </Box>
           <Chip
-            label={user.is_active ? 'Active' : 'Inactive'}
+            label={user.is_active ? t('users.active') : t('users.inactive')}
             color={user.is_active ? 'success' : 'default'}
             size="small"
           />
         </Box>
         <Typography variant="caption" color="text.secondary">
-          Joined: {new Date(user.created_at).toLocaleDateString()}
+          {t('users.joined')} {new Date(user.created_at).toLocaleDateString()}
         </Typography>
       </CardContent>
     </Card>

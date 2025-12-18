@@ -20,6 +20,8 @@ import PeopleIcon from '@mui/icons-material/People';
 import BusinessIcon from '@mui/icons-material/Business';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const AppBar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -27,6 +29,7 @@ const AppBar = () => {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { t } = useTranslation();
 
   const navItems = [
     { label: 'Home', path: '/', icon: <HomeIcon /> },
@@ -77,6 +80,8 @@ const AppBar = () => {
           >
             {import.meta.env.VITE_APP_NAME || 'Quiz Platform'}
           </Typography>
+
+          {!isMobile && <LanguageSwitcher />}
 
           {isMobile ? (
             <IconButton color="inherit" edge="start" onClick={handleDrawerToggle}>

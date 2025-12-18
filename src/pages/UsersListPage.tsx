@@ -4,9 +4,11 @@ import PageContainer from '../components/PageContainer';
 import UserCard from '../components/UserCard';
 import { mockUsers } from '../utils/mockData';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const UsersListPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useTranslation();
 
   const filteredUsers = mockUsers.filter(
     (user) =>
@@ -18,17 +20,17 @@ const UsersListPage = () => {
     <PageContainer>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom color="primary">
-          Users
+          {t('users.title')}
         </Typography>
         <Typography variant="body1" color="text.secondary" paragraph>
-          Browse and manage all platform users
+          {t('users.subtitle')}
         </Typography>
       </Box>
 
       <Box sx={{ mb: 4 }}>
         <TextField
           fullWidth
-          placeholder="Search users by name or email..."
+          placeholder={t('users.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           InputProps={{
@@ -42,7 +44,7 @@ const UsersListPage = () => {
       </Box>
 
       <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-        Total Users: {filteredUsers.length}
+        {t('users.totalUsers')} {filteredUsers.length}
       </Typography>
 
       <Grid container spacing={3}>
@@ -56,7 +58,7 @@ const UsersListPage = () => {
       {filteredUsers.length === 0 && (
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography variant="h6" color="text.secondary">
-            No users found matching your search
+            {t('users.noUsersFound')}
           </Typography>
         </Box>
       )}

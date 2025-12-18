@@ -7,6 +7,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import PageContainer from '../components/PageContainer';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCompanyById, getUserById, getCompanyOwnerName } from '../utils/mockData';
+import { useTranslation } from 'react-i18next';
 
 const CompanyProfilePage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,19 +15,20 @@ const CompanyProfilePage = () => {
   const company = id ? getCompanyById(id) : undefined;
   const owner = company ? getUserById(company.owner_id) : undefined;
   const ownerName = company ? getCompanyOwnerName(company.owner_id) : 'Unknown';
+  const { t } = useTranslation();
 
   if (!company) {
     return (
       <PageContainer>
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography variant="h4" gutterBottom>
-            Company Not Found
+            {t('companies.companyNotFound')}
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph>
-            The company you're looking for doesn't exist.
+            {t('companies.companyNotFoundDesc')}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/companies')}>
-            Back to Companies
+            {t('companies.backToCompanies')}
           </Button>
         </Box>
       </PageContainer>
@@ -36,7 +38,7 @@ const CompanyProfilePage = () => {
   return (
     <PageContainer>
       <Button variant="outlined" onClick={() => navigate('/companies')} sx={{ mb: 3 }}>
-        ← Back to Companies
+        ← {t('companies.backToCompanies')}
       </Button>
 
       <Paper sx={{ p: 4, mb: 4 }}>
@@ -48,14 +50,14 @@ const CompanyProfilePage = () => {
             </Typography>
             <Chip
               icon={company.is_visible ? <VisibilityIcon /> : <VisibilityOffIcon />}
-              label={company.is_visible ? 'Public' : 'Private'}
+              label={company.is_visible ? t('companies.public') : t('companies.private')}
               color={company.is_visible ? 'success' : 'default'}
             />
           </Box>
         </Box>
 
         <Typography variant="body1" paragraph sx={{ mb: 3 }}>
-          {company.description || 'No description available'}
+          {company.description || t('companies.noDescription')}
         </Typography>
 
         <Divider sx={{ my: 3 }} />
@@ -65,7 +67,7 @@ const CompanyProfilePage = () => {
             <Box sx={{ textAlign: 'center', p: 2 }}>
               <CalendarTodayIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
               <Typography variant="body2" color="text.secondary">
-                Created
+                {t('companies.created')}
               </Typography>
               <Typography variant="body1">
                 {new Date(company.created_at).toLocaleDateString()}
@@ -77,7 +79,7 @@ const CompanyProfilePage = () => {
             <Box sx={{ textAlign: 'center', p: 2 }}>
               <PersonIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
               <Typography variant="body2" color="text.secondary">
-                Owner
+                {t('companies.owner')}
               </Typography>
               <Button
                 variant="text"
@@ -95,32 +97,32 @@ const CompanyProfilePage = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
-              Company Information
+              {t('companies.companyInfo')}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Company ID
+                  {t('companies.companyId')}
                 </Typography>
                 <Typography variant="body1">{company.id}</Typography>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Visibility
+                  {t('companies.visibility')}
                 </Typography>
                 <Typography variant="body1">
-                  {company.is_visible ? 'Public - Visible to everyone' : 'Private - Members only'}
+                  {company.is_visible ? t('companies.publicDesc') : t('companies.privateDesc')}
                 </Typography>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Owner Email
+                  {t('companies.ownerEmail')}
                 </Typography>
                 <Typography variant="body1">{owner?.email || 'N/A'}</Typography>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Created At
+                  {t('companies.createdAt')}
                 </Typography>
                 <Typography variant="body1">
                   {new Date(company.created_at).toLocaleString()}
@@ -128,7 +130,7 @@ const CompanyProfilePage = () => {
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Last Updated
+                  {t('companies.lastUpdated')}
                 </Typography>
                 <Typography variant="body1">
                   {new Date(company.updated_at).toLocaleString()}
@@ -141,21 +143,21 @@ const CompanyProfilePage = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
-              Quick Actions
+              {t('companies.quickActions')}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Button variant="contained" fullWidth disabled>
-                View Quizzes (Coming Soon)
+                {t('companies.viewQuizzes')}
               </Button>
               <Button variant="outlined" fullWidth disabled>
-                View Members (Coming Soon)
+                {t('companies.viewMembers')}
               </Button>
               <Button variant="outlined" fullWidth disabled>
-                Join Company (Coming Soon)
+                {t('companies.joinCompany')}
               </Button>
             </Box>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-              Note: These features will be available in future updates
+              {t('companies.comingSoonNote')}
             </Typography>
           </Paper>
         </Grid>

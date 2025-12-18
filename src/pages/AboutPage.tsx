@@ -1,31 +1,34 @@
 import { Typography, Box, Paper, Grid } from '@mui/material';
 import PageContainer from '../components/PageContainer';
+import { useTranslation } from 'react-i18next';
 import InfoIcon from '@mui/icons-material/Info';
 import CodeIcon from '@mui/icons-material/Code';
 import SecurityIcon from '@mui/icons-material/Security';
 import SpeedIcon from '@mui/icons-material/Speed';
 
 const AboutPage = () => {
+  const { t } = useTranslation();
+
   const features = [
     {
       icon: <CodeIcon sx={{ fontSize: 40 }} />,
-      title: 'Modern Stack',
-      description: 'Built with React, TypeScript, Material UI, and Vite',
+      title: t('about.modernStack'),
+      description: t('about.modernStackDesc'),
     },
     {
       icon: <SecurityIcon sx={{ fontSize: 40 }} />,
-      title: 'Secure',
-      description: 'JWT authentication with Auth0 integration',
+      title: t('about.secure'),
+      description: t('about.secureDesc'),
     },
     {
       icon: <SpeedIcon sx={{ fontSize: 40 }} />,
-      title: 'Fast',
-      description: 'Optimized performance with Docker and Nginx',
+      title: t('about.fast'),
+      description: t('about.fastDesc'),
     },
     {
       icon: <InfoIcon sx={{ fontSize: 40 }} />,
-      title: 'Comprehensive',
-      description: 'Quiz management, analytics, and real-time notifications',
+      title: t('about.comprehensive'),
+      description: t('about.comprehensiveDesc'),
     },
   ];
 
@@ -33,31 +36,27 @@ const AboutPage = () => {
     <PageContainer>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom color="primary">
-          About Quiz Platform
+          {t('about.title')}
         </Typography>
         <Typography variant="h6" color="text.secondary" paragraph>
-          A comprehensive quiz management system for companies and teams
+          {t('about.subtitle')}
         </Typography>
       </Box>
 
       <Paper sx={{ p: 4, mb: 4 }}>
         <Typography variant="h5" gutterBottom>
-          What is Quiz Platform?
+          {t('about.whatIs')}
         </Typography>
         <Typography variant="body1" paragraph>
-          Quiz Platform is a modern web application designed to help companies create, manage, and
-          track quizzes for their teams. Built with cutting-edge technologies, it provides a
-          seamless experience for both administrators and users.
+          {t('about.description1')}
         </Typography>
         <Typography variant="body1" paragraph>
-          Whether you're conducting employee training, knowledge assessments, or team building
-          activities, Quiz Platform offers all the tools you need to create engaging and effective
-          quizzes.
+          {t('about.description2')}
         </Typography>
       </Paper>
 
       <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-        Key Features
+        {t('about.keyFeatures')}
       </Typography>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -91,12 +90,12 @@ const AboutPage = () => {
 
       <Paper sx={{ p: 4, bgcolor: 'primary.main', color: 'white' }}>
         <Typography variant="h5" gutterBottom>
-          Technology Stack
+          {t('about.techStack')}
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-              Frontend:
+              {t('about.frontend')}
             </Typography>
             <Typography variant="body2">• React 18 with TypeScript</Typography>
             <Typography variant="body2">• Material UI for components</Typography>
@@ -105,7 +104,7 @@ const AboutPage = () => {
           </Grid>
           <Grid item xs={12} sm={6}>
             <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-              Backend:
+              {t('about.backend')}
             </Typography>
             <Typography variant="body2">• FastAPI (Python)</Typography>
             <Typography variant="body2">• PostgreSQL database</Typography>

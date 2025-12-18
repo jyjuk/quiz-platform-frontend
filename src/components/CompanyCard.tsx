@@ -5,6 +5,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import type { Company } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { getCompanyOwnerName } from '../utils/mockData';
+import { useTranslation } from 'react-i18next';
 
 interface CompanyCardProps {
   company: Company;
@@ -13,6 +14,7 @@ interface CompanyCardProps {
 const CompanyCard = ({ company }: CompanyCardProps) => {
   const navigate = useNavigate();
   const ownerName = getCompanyOwnerName(company.owner_id);
+  const { t } = useTranslation();
 
   const handleClick = () => {
     navigate(`/companies/${company.id}`);
@@ -37,27 +39,27 @@ const CompanyCard = ({ company }: CompanyCardProps) => {
           <Box sx={{ flex: 1 }}>
             <Typography variant="h6">{company.name}</Typography>
             <Typography variant="caption" color="text.secondary">
-              by {ownerName}
+              {t('companies.by')} {ownerName}
             </Typography>
           </Box>
           <Chip
             icon={company.is_visible ? <VisibilityIcon /> : <VisibilityOffIcon />}
-            label={company.is_visible ? 'Public' : 'Private'}
+            label={company.is_visible ? t('companies.public') : t('companies.private')}
             color={company.is_visible ? 'success' : 'default'}
             size="small"
           />
         </Box>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, minHeight: '40px' }}>
-          {company.description || 'No description available'}
+          {company.description || t('companies.noDescription')}
         </Typography>
 
         <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
-          Created: {new Date(company.created_at).toLocaleDateString()}
+          {t('companies.created')}: {new Date(company.created_at).toLocaleDateString()}
         </Typography>
 
         <Button variant="contained" fullWidth onClick={handleClick}>
-          View Details
+          {t('companies.viewDetails')}
         </Button>
       </CardContent>
     </Card>

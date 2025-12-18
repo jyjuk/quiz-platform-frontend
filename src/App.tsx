@@ -9,6 +9,7 @@ import UserProfilePage from './pages/UserProfilePage';
 import CompaniesListPage from './pages/CompaniesListPage';
 import CompanyProfilePage from './pages/CompanyProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
+import './i18n/config';
 
 function App() {
   return (

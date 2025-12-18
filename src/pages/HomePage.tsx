@@ -1,30 +1,32 @@
 import { Container, Typography, Button, Box, Grid, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import PeopleIcon from '@mui/icons-material/People';
 import BusinessIcon from '@mui/icons-material/Business';
 import InfoIcon from '@mui/icons-material/Info';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const quickLinks = [
     {
-      title: 'Browse Users',
-      description: 'View and manage all platform users',
+      title: t('home.browseUsers'),
+      description: t('home.browseUsersDesc'),
       icon: <PeopleIcon sx={{ fontSize: 60 }} />,
       path: '/users',
       color: '#1976d2',
     },
     {
-      title: 'Explore Companies',
-      description: 'Discover companies and their quizzes',
+      title: t('home.exploreCompanies'),
+      description: t('home.exploreCompaniesDesc'),
       icon: <BusinessIcon sx={{ fontSize: 60 }} />,
       path: '/companies',
       color: '#9c27b0',
     },
     {
-      title: 'About Platform',
-      description: 'Learn more about our features',
+      title: t('home.aboutPlatform'),
+      description: t('home.aboutPlatformDesc'),
       icon: <InfoIcon sx={{ fontSize: 60 }} />,
       path: '/about',
       color: '#2e7d32',
@@ -50,14 +52,13 @@ const HomePage = () => {
           color="primary"
           sx={{ fontWeight: 'bold' }}
         >
-          {import.meta.env.VITE_APP_NAME || 'Quiz Platform'}
+          {t('home.title')}
         </Typography>
         <Typography variant="h5" component="h2" gutterBottom color="text.secondary" sx={{ mb: 4 }}>
-          Welcome to the Quiz Management System
+          {t('home.subtitle')}
         </Typography>
         <Typography variant="body1" paragraph sx={{ mb: 4, maxWidth: '600px' }}>
-          Manage your quizzes, companies, and track progress all in one place. Get started by
-          exploring our features below.
+          {t('home.description')}
         </Typography>
 
         <Grid container spacing={3} sx={{ mt: 4 }}>
@@ -87,7 +88,7 @@ const HomePage = () => {
                   {link.description}
                 </Typography>
                 <Button variant="contained" sx={{ mt: 'auto' }}>
-                  Explore
+                  {t('home.explore')}
                 </Button>
               </Paper>
             </Grid>
