@@ -65,8 +65,16 @@ src/
 │   ├── Modal.tsx                # Universal modal dialog
 │   ├── PageContainer.tsx        # Consistent page container
 │   ├── UserCard.tsx             # User display card
-│   └── CompanyCard.tsx          # Company display card
+│   ├── CompanyCard.tsx          # Company display card
+│   └── LanguageSwitcher.tsx     # Language selector component
 ├── constants/                   # Application constants
+├── i18n/                        # Internationalization
+│   ├── config.ts                # i18n configuration
+│   └── locales/
+│       ├── en/
+│       │   └── translation.json # English translations
+│       └── uk/
+│           └── translation.json # Ukrainian translations
 ├── pages/                       # Page components
 │   ├── HomePage.tsx             # Landing page with quick links
 │   ├── AboutPage.tsx            # Platform information
@@ -91,6 +99,37 @@ src/
 - **Material UI** - Component library
 - **React Router** - Client-side routing
 - **Axios** - HTTP client (ready for API integration)
+- **i18next** - Internationalization framework
+- **react-i18next** - React integration for i18n
+
+## 📦 Key Dependencies
+
+### Production
+```json
+{
+  "react": "^18.3.1",
+  "react-dom": "^18.3.1",
+  "react-router-dom": "^7.1.1",
+  "@mui/material": "^6.3.0",
+  "@mui/icons-material": "^6.3.0",
+  "@emotion/react": "^11.14.0",
+  "@emotion/styled": "^11.14.0",
+  "axios": "^1.7.9",
+  "i18next": "^23.17.4",
+  "react-i18next": "^15.2.0",
+  "i18next-browser-languagedetector": "^8.0.2"
+}
+```
+
+### Development
+```json
+{
+  "typescript": "~5.6.2",
+  "vite": "^6.0.3",
+  "@vitejs/plugin-react": "^4.3.4",
+  "prettier": "^3.4.2"
+}
+```
 
 ## 📝 Environment Variables
 
@@ -122,6 +161,7 @@ Backend repository: [Quiz Platform Backend](https://github.com/jyjuk/backend-int
 - Three main sections: Users, Companies, About
 - Material UI cards with hover effects
 - Responsive layout
+- Multi-language support
 
 #### About Page
 - Platform overview and mission
@@ -162,7 +202,7 @@ Backend repository: [Quiz Platform Backend](https://github.com/jyjuk/backend-int
 
 **Layout Components:**
 - `Layout` - Main layout wrapper with header, content, footer
-- `AppBar` - Responsive navigation with mobile drawer menu
+- `AppBar` - Responsive navigation with mobile drawer menu and language switcher
 - `Footer` - Application footer with copyright and links
 - `PageContainer` - Consistent page wrapper with max-width
 
@@ -184,6 +224,10 @@ Backend repository: [Quiz Platform Backend](https://github.com/jyjuk/backend-int
   - Description preview
   - Created date
   - Click navigation to profile
+- `LanguageSwitcher` - Language selector with:
+  - Flag icons for languages (🇬🇧 EN / 🇺🇦 UA)
+  - Dropdown select interface
+  - Integrated in AppBar and mobile drawer
 
 ### Mock Data
 
@@ -221,6 +265,7 @@ Application uses mock data matching exact backend API structure for development:
 - `getVisibleCompanies()` - Get public companies
 - `searchUsers(query)` - Search users by name/email
 - `searchCompanies(query)` - Search companies by name/description
+- `getCompanyOwnerName(ownerId)` - Get owner username for company
 
 **Easy API Integration:**
 Mock data uses exact backend structure (UUIDs, snake_case) for seamless API migration.
@@ -250,6 +295,117 @@ Application uses React Router v6 with nested routes:
 - **Loading States** - Ready for async data loading
 - **Error Handling** - 404 page with navigation
 - **Accessibility** - Semantic HTML and ARIA labels
+- **Internationalization** - Multi-language support (EN/UK)
+
+## 🌍 Internationalization (i18n)
+
+### Supported Languages
+
+- **English (EN)** - Default language 🇬🇧
+- **Ukrainian (UK)** - Full translation 🇺🇦
+
+### Translation System
+
+The application uses **react-i18next** for internationalization:
+
+- **Automatic language detection** from LocalStorage
+- **Language persistence** across browser sessions
+- **Instant switching** without page reload
+- **100+ translation keys** covering all UI elements
+- **Easy to extend** with new languages
+
+### Language Switcher
+
+Located in the AppBar (top navigation):
+- **Desktop**: Dropdown selector with flag icons (🇬🇧 EN / 🇺🇦 UA)
+- **Mobile**: Available in drawer menu
+- **Visual indicator**: Language icon for clarity
+- **Persistent selection**: Choice saved in LocalStorage
+
+### Translation Files Structure
+```
+src/i18n/
+├── config.ts                    # i18n configuration
+└── locales/
+    ├── en/
+    │   └── translation.json     # English translations
+    └── uk/
+        └── translation.json     # Ukrainian translations
+```
+
+### Translation Keys Organization
+```json
+{
+  "common": {},      // Buttons, actions, common UI elements
+  "nav": {},         // Navigation menu items
+  "home": {},        // Home page content
+  "about": {},       // About page content
+  "users": {},       // Users-related pages
+  "companies": {},   // Companies-related pages
+  "notFound": {},    // 404 error page
+  "footer": {}       // Footer content
+}
+```
+
+### Usage in Components
+```typescript
+import { useTranslation } from 'react-i18next';
+
+const MyComponent = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <div>
+      <h1>{t('home.title')}</h1>
+      <button>{t('common.save')}</button>
+    </div>
+  );
+};
+```
+
+### Adding New Languages
+
+1. Create new translation file: `src/i18n/locales/{lang}/translation.json`
+2. Copy structure from `en/translation.json`
+3. Translate all values
+4. Add language to resources in `src/i18n/config.ts`:
+```typescript
+   const resources = {
+     en: { translation: enTranslation },
+     uk: { translation: ukTranslation },
+     de: { translation: deTranslation }, // New language
+   };
+```
+5. Add language option to `LanguageSwitcher.tsx`:
+```typescript
+   <MenuItem value="de">🇩🇪 DE</MenuItem>
+```
+
+### Language Persistence
+
+Selected language is automatically saved to **LocalStorage**:
+- Key: `i18nextLng`
+- Value: `en`, `uk`, etc.
+- Persists across browser sessions
+- Applied automatically on app load
+
+### i18n Configuration
+
+**Key settings in `src/i18n/config.ts`:**
+```typescript
+{
+  fallbackLng: 'en',              // Default language
+  lng: localStorage.getItem('i18nextLng') || 'en',
+  debug: false,                   // Set to true for debugging
+  interpolation: {
+    escapeValue: false            // React already escapes
+  },
+  detection: {
+    order: ['localStorage', 'navigator'],
+    caches: ['localStorage']
+  }
+}
+```
 
 ## 🐳 Docker
 
@@ -711,6 +867,61 @@ npm run preview
 npm run format
 ```
 
+## 🔧 Development Workflow
+
+1. Create a new branch from `develop`:
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b FE-X-feature-name
+```
+
+2. Make your changes and commit:
+```bash
+npm run format
+git add .
+git commit -m "FE-X: Description of changes"
+```
+
+3. Push your branch:
+```bash
+git push -u origin FE-X-feature-name
+```
+
+4. Create Pull Request on GitHub:
+   - Base: `develop`
+   - Compare: `FE-X-feature-name`
+   - Add reviewers (mentors)
+   - Set yourself as assignee
+
+5. Wait for code review and approval
+
+6. After approval, mentor will merge the PR
+
+**Important:** Never merge your own PRs. Always wait for mentor approval.
+
+## 📚 Available Scripts
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run lint         # Lint code with ESLint
+npm run format       # Format code with Prettier
+npm run format:check # Check code formatting
+```
+
+## 🤝 Contributing
+
+1. Follow the Git workflow described above
+2. Use conventional commit messages
+3. Format code before committing
+4. Write tests for new features
+5. Update documentation as needed
+
+## 📄 License
+
+This project is part of an internship program.
+
 ## 👥 Authors
 
 - [@jyjuk](https://github.com/jyjuk)
@@ -724,3 +935,7 @@ npm run format
 ## 🔗 Related Repositories
 
 - [Backend Repository](https://github.com/jyjuk/backend-internship)
+
+## 📞 Support
+
+For questions or issues, please contact your mentors or create an issue in the repository.
