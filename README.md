@@ -82,8 +82,13 @@ src/
 │   ├── UserProfilePage.tsx      # User details and owned companies
 │   ├── CompaniesListPage.tsx    # Companies list with filters
 │   ├── CompanyProfilePage.tsx   # Company details
+│   ├── ReduxTestPage.tsx        # Redux Toolkit test demonstration
 │   └── NotFoundPage.tsx         # 404 error page
-├── store/                       # Global state management
+├── store/                       # Redux Toolkit state management
+│   ├── index.ts                 # Store configuration
+│   ├── hooks.ts                 # Typed Redux hooks
+│   └── slices/
+│       └── testSlice.ts         # Test slice (demonstration)
 ├── types/                       # TypeScript type definitions
 │   └── index.ts                 # User, Company, Auth types
 ├── utils/                       # Helper functions
@@ -101,6 +106,8 @@ src/
 - **Axios** - HTTP client (ready for API integration)
 - **i18next** - Internationalization framework
 - **react-i18next** - React integration for i18n
+- **Redux Toolkit** - State management
+- **react-redux** - React bindings for Redux
 
 ## 📦 Key Dependencies
 
@@ -117,7 +124,9 @@ src/
   "axios": "^1.7.9",
   "i18next": "^23.17.4",
   "react-i18next": "^15.2.0",
-  "i18next-browser-languagedetector": "^8.0.2"
+  "i18next-browser-languagedetector": "^8.0.2",
+  "@reduxjs/toolkit": "^2.11.2",
+  "react-redux": "^9.2.0"
 }
 ```
 
@@ -406,6 +415,180 @@ Selected language is automatically saved to **LocalStorage**:
   }
 }
 ```
+## 🔄 State Management (Redux Toolkit)
+
+### Global State Management
+
+The application uses **Redux Toolkit** for centralized state management:
+
+- **Predictable state updates** through actions and reducers
+- **Type-safe** with TypeScript integration
+- **DevTools support** for debugging and time-travel
+- **Efficient** with built-in performance optimizations
+- **Easy to test** with isolated state logic
+
+### Redux Toolkit Setup
+
+**Store configuration:**
+```typescript
+// src/store/index.ts
+import { configureStore } from '@reduxjs/toolkit';
+import testReducer from './slices/testSlice';
+
+export const store = configureStore({
+  reducer: {
+    test: testReducer,
+    // Add more slices here
+  },
+});
+```
+
+**Provider integration:**
+```typescript
+// src/main.tsx
+import { Provider } from 'react-redux';
+import { store } from './store';
+
+<Provider store={store}>
+  <App />
+</Provider>
+```
+
+### Slices
+
+Redux Toolkit uses **slices** to organize state logic:
+
+**Test Slice** (demonstration):
+- Location: `src/store/slices/testSlice.ts`
+- State: Test string value
+- Actions: Set, append, and reset string
+- Purpose: Demonstrates Redux Toolkit functionality
+
+**Slice structure:**
+```typescript
+import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+
+const testSlice = createSlice({
+  name: 'test',
+  initialState: { testString: 'Hello from Redux Toolkit!' },
+  reducers: {
+    setTestString: (state, action: PayloadAction<string>) => {
+      state.testString = action.payload;
+    },
+    resetTestString: (state) => {
+      state.testString = initialState.testString;
+    },
+  },
+});
+
+export const { setTestString, resetTestString } = testSlice.actions;
+export default testSlice.reducer;
+```
+
+### Typed Hooks
+
+Custom typed hooks for better TypeScript support:
+```typescript
+// src/store/hooks.ts
+import { useDispatch, useSelector } from 'react-redux';
+import type { RootState, AppDispatch } from './index';
+
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+export const useAppSelector = useSelector.withTypes<RootState>();
+```
+
+**Usage in components:**
+```typescript
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { setTestString } from '../store/slices/testSlice';
+
+const MyComponent = () => {
+  const dispatch = useAppDispatch();
+  const testString = useAppSelector((state) => state.test.testString);
+
+  const handleClick = () => {
+    dispatch(setTestString('New value'));
+  };
+
+  return <div>{testString}</div>;
+};
+```
+
+### Redux DevTools
+
+Install browser extension for debugging:
+- **Chrome**: [Redux DevTools Extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd)
+- **Firefox**: [Redux DevTools Add-on](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/)
+
+**Features:**
+- View all dispatched actions
+- Inspect state changes
+- Time-travel debugging (undo/redo actions)
+- Export/import state snapshots
+
+### Test Page
+
+Access Redux test demonstration:
+- URL: `/redux-test`
+- Features:
+  - Display current Redux state
+  - Set new string value
+  - Append to existing value
+  - Reset to default value
+- Purpose: Demonstrates Redux Toolkit integration and functionality
+
+### Adding New Slices
+
+1. Create slice file: `src/store/slices/mySlice.ts`
+2. Define state interface and initial state
+3. Create slice with reducers
+4. Export actions and reducer
+5. Add reducer to store configuration
+
+**Example:**
+```typescript
+// 1. Create slice
+const userSlice = createSlice({
+  name: 'user',
+  initialState: { name: '', email: '' },
+  reducers: {
+    setUser: (state, action) => {
+      state.name = action.payload.name;
+      state.email = action.payload.email;
+    },
+  },
+});
+
+// 2. Add to store
+export const store = configureStore({
+  reducer: {
+    test: testReducer,
+    user: userReducer, // New slice
+  },
+});
+```
+
+### Benefits of Redux Toolkit
+
+- ✅ **Less boilerplate** compared to traditional Redux
+- ✅ **Built-in Immer** for immutable state updates
+- ✅ **DevTools integration** out of the box
+- ✅ **TypeScript friendly** with excellent type inference
+- ✅ **Best practices** included by default
+- ✅ **Async logic** support with createAsyncThunk
+- ✅ **RTK Query** available for API calls
+
+### Future Usage
+
+Redux state will be used for:
+- User authentication state
+- Current user information
+- Application-wide settings
+- Shopping cart (if applicable)
+- UI state (modals, notifications)
+- Cached API data
+
 
 ## 🐳 Docker
 
