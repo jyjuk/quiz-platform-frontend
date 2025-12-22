@@ -1,4 +1,14 @@
-import { Typography, Box, TextField, Button, Paper, Stack } from '@mui/material';
+import {
+  Typography,
+  Box,
+  TextField,
+  Button,
+  Paper,
+  Stack,
+  List,
+  ListItem,
+  ListItemText,
+} from '@mui/material';
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setTestString, resetTestString, appendTestString } from '../store/slices/testSlice';
@@ -6,9 +16,7 @@ import PageContainer from '../components/PageContainer';
 
 const ReduxTestPage = () => {
   const dispatch = useAppDispatch();
-
   const testString = useAppSelector((state) => state.test.testString);
-
   const [inputValue, setInputValue] = useState('');
 
   const handleSetString = () => {
@@ -75,20 +83,30 @@ const ReduxTestPage = () => {
         <Typography variant="h6" gutterBottom>
           How it works:
         </Typography>
-        <Typography variant="body2" component="div">
-          <ul>
-            <li>
-              <strong>Set String:</strong> Replaces the entire string with your input
-            </li>
-            <li>
-              <strong>Append to String:</strong> Adds your input to the end of the current string
-            </li>
-            <li>
-              <strong>Reset:</strong> Returns to the default value "Hello from Redux Toolkit!"
-            </li>
-          </ul>
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 2 }}>
+        <List>
+          <ListItem>
+            <ListItemText
+              primary="Set String"
+              secondary="Replaces the entire string with your input"
+              primaryTypographyProps={{ fontWeight: 'bold' }}
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              primary="Append to String"
+              secondary="Adds your input to the end of the current string"
+              primaryTypographyProps={{ fontWeight: 'bold' }}
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              primary="Reset"
+              secondary='Returns to the default value "Hello from Redux Toolkit!"'
+              primaryTypographyProps={{ fontWeight: 'bold' }}
+            />
+          </ListItem>
+        </List>
+        <Typography variant="body2" sx={{ mt: 2, ml: 2 }}>
           <strong>Redux State:</strong> The string is stored in global Redux state and can be
           accessed from any component in the app.
         </Typography>
