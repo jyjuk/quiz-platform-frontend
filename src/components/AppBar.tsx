@@ -22,6 +22,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
+import CodeIcon from '@mui/icons-material/Code';
 
 const AppBar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -32,10 +33,11 @@ const AppBar = () => {
   const { t } = useTranslation();
 
   const navItems = [
-    { label: 'Home', path: '/', icon: <HomeIcon /> },
-    { label: 'About', path: '/about', icon: <InfoIcon /> },
-    { label: 'Users', path: '/users', icon: <PeopleIcon /> },
-    { label: 'Companies', path: '/companies', icon: <BusinessIcon /> },
+    { label: t('nav.home'), path: '/', icon: <HomeIcon /> },
+    { label: t('nav.about'), path: '/about', icon: <InfoIcon /> },
+    { label: t('nav.users'), path: '/users', icon: <PeopleIcon /> },
+    { label: t('nav.companies'), path: '/companies', icon: <BusinessIcon /> },
+    { label: 'Redux Test', path: '/redux-test', icon: <CodeIcon /> },
   ];
 
   const handleDrawerToggle = () => {
