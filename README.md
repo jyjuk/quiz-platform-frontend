@@ -61,17 +61,21 @@ src/
 │   ├── axios.ts                 # Configured Axios instance with interceptors
 │   ├── endpoints.ts             # API endpoint constants
 │   └── services/
-│       └── healthService.ts     # Health check API service axios.ts
+│       ├── healthService.ts     # Health check API service
+│       └── authService.ts       # Authentication API service
 ├── components/                  # Reusable UI components
-│   ├── AppBar.tsx               # Navigation bar with responsive menu
+│   ├── AppBar.tsx               # Navigation bar with auth state and user menu
 │   ├── Footer.tsx               # Application footer
 │   ├── Layout.tsx               # Page layout wrapper
 │   ├── Modal.tsx                # Universal modal dialog
 │   ├── PageContainer.tsx        # Consistent page container
 │   ├── UserCard.tsx             # User display card
 │   ├── CompanyCard.tsx          # Company display card
-│   └── LanguageSwitcher.tsx     # Language selector component
+│   ├── LanguageSwitcher.tsx     # Language selector component
+│   └── ProtectedRoute.tsx       # Route guard for authenticated routes
 ├── constants/                   # Application constants
+├── hooks/                       # Custom React hooks
+│   └── useTokenExpiry.ts        # Token expiry monitoring hook
 ├── i18n/                        # Internationalization
 │   ├── config.ts                # i18n configuration
 │   └── locales/
@@ -82,17 +86,21 @@ src/
 ├── pages/                       # Page components
 │   ├── HomePage.tsx             # Landing page with quick links
 │   ├── AboutPage.tsx            # Platform information
+│   ├── LoginPage.tsx            # User login page
+│   ├── RegisterPage.tsx         # User registration page
 │   ├── UsersListPage.tsx        # Users list with search
 │   ├── UserProfilePage.tsx      # User details and owned companies
 │   ├── CompaniesListPage.tsx    # Companies list with filters
 │   ├── CompanyProfilePage.tsx   # Company details
 │   ├── ReduxTestPage.tsx        # Redux Toolkit test demonstration
+│   ├── HealthCheckPage.tsx      # Backend health check page
 │   └── NotFoundPage.tsx         # 404 error page
 ├── store/                       # Redux Toolkit state management
 │   ├── index.ts                 # Store configuration
 │   ├── hooks.ts                 # Typed Redux hooks
 │   └── slices/
-│       └── testSlice.ts         # Test slice (demonstration)
+│       ├── testSlice.ts         # Test slice (demonstration)
+│       └── authSlice.ts         # Authentication state slice
 ├── types/                       # TypeScript type definitions
 │   └── index.ts                 # User, Company, Auth types
 ├── utils/                       # Helper functions
@@ -593,6 +601,379 @@ Redux state will be used for:
 - UI state (modals, notifications)
 - Cached API data
 
+## 🔐 Authentication & Authorization
+
+### Overview
+
+Complete JWT-based authentication system with token management, route protection, and automatic token expiry handling.
+
+### Features
+
+- **JWT Authentication** - Email/password login with access and refresh tokens
+- **User Registration** - Form validation and account creation
+- **Protected Routes** - Route guards for authenticated-only pages
+- **Token Management** - Automatic token storage and refresh
+- **Token Expiry** - Auto logout when token expires
+- **Persistent Auth** - State preserved across browser sessions
+- **Social Login UI** - Google and GitHub buttons (backend integration pending)
+
+### Authentication Flow
+```
+User Registration
+    ↓
+POST /users/ (username, email, password)
+    ↓
+Redirect to Login
+    ↓
+User Login (email, password)
+    ↓
+POST /auth/login → access_token + refresh_token
+    ↓
+GET /auth/me → user data
+    ↓
+Redux: setCredentials(tokens + user)
+    ↓
+localStorage: save tokens
+    ↓
+Navigate to protected route
+    ↓
+ProtectedRoute: check isAuthenticated
+    ↓
+Axios: add Bearer token to requests
+    ↓
+useTokenExpiry: monitor token expiration
+```
+
+### Authentication State (Redux)
+
+**Location:** `src/store/slices/authSlice.ts`
+
+**State Structure:**
+```typescript
+{
+  token: string | null,           // JWT access token
+  refreshToken: string | null,    // JWT refresh token
+  isAuthenticated: boolean,       // Auth status
+  user: {
+    id: string,
+    username: string,
+    email: string
+  } | null
+}
+```
+
+**Actions:**
+- `setCredentials(tokens, user)` - Store auth data after login
+- `logout()` - Clear auth state and localStorage
+- `setUser(user)` - Update user information
+
+### Protected Routes
+
+**Component:** `src/components/ProtectedRoute.tsx`
+
+Wraps routes that require authentication. Redirects to `/login` if not authenticated.
+
+**Usage:**
+```typescript
+<Route
+  path="/users"
+  element={
+    <ProtectedRoute>
+      <UsersListPage />
+    </ProtectedRoute>
+  }
+/>
+```
+
+**Protected Routes:**
+- `/users` - Users list
+- `/users/:id` - User profile
+- `/companies` - Companies list
+- `/companies/:id` - Company profile
+- `/redux-test` - Redux test page
+- `/health-check` - Health check page
+
+**Public Routes:**
+- `/` - Home page
+- `/about` - About page
+- `/login` - Login page
+- `/register` - Registration page
+
+### Authentication Pages
+
+#### Login Page
+
+**URL:** `/login`
+
+**Features:**
+- Email and password fields
+- Show/hide password toggle
+- Form validation
+- Error messages
+- Loading state
+- Link to registration
+- Social login buttons (UI only)
+
+**API Integration:**
+```typescript
+POST /auth/login
+Body: { email, password }
+Response: { access_token, refresh_token, token_type }
+```
+
+#### Registration Page
+
+**URL:** `/register`
+
+**Features:**
+- Username, email, password, confirm password fields
+- Show/hide password toggles
+- Form validation:
+  - Username: min 3 characters
+  - Email: valid format
+  - Password: min 6 characters
+  - Passwords must match
+- Error messages
+- Loading state
+- Link to login
+- Social registration buttons (UI only)
+
+**API Integration:**
+```typescript
+POST /users/
+Body: { username, email, password }
+Response: User object
+```
+
+### Token Management
+
+#### Storage
+
+Tokens stored in:
+- **Redux State** - For application use
+- **localStorage** - For persistence across sessions
+
+**Keys:**
+- `token` - Access token (30 min expiration)
+- `refreshToken` - Refresh token (7 days expiration)
+
+#### Axios Interceptor
+
+**Request Interceptor:**
+```typescript
+// Automatically adds Bearer token to all requests
+config.headers.Authorization = `Bearer ${token}`;
+```
+
+**Response Interceptor:**
+```typescript
+// Auto logout on 401 Unauthorized
+if (error.response.status === 401) {
+  localStorage.clear();
+  window.location.href = '/login';
+}
+```
+
+#### Token Expiry Hook
+
+**Location:** `src/hooks/useTokenExpiry.ts`
+
+**Features:**
+- Decodes JWT token
+- Checks expiration timestamp
+- Runs check every 60 seconds
+- Auto logout when expired
+- Handles invalid tokens
+
+**Usage:**
+```typescript
+function App() {
+  useTokenExpiry(); // Add to App.tsx
+  // ...
+}
+```
+
+### AppBar Integration
+
+AppBar adapts based on authentication state:
+
+**Not Authenticated:**
+- Shows: Home, About
+- Buttons: Login, Register
+
+**Authenticated:**
+- Shows: Home, About, Users, Companies, Redux Test, Health Check
+- User Avatar with dropdown menu:
+  - Username display
+  - Logout button
+
+**Avatar:**
+- Shows first letter of username
+- Opens dropdown menu on click
+
+### Logout Functionality
+
+**Trigger:** Click Avatar → Logout
+
+**Process:**
+1. Dispatch `logout()` action
+2. Clear Redux state
+3. Clear localStorage
+4. Close dropdown menu
+5. Navigate to `/login`
+
+**Result:**
+- User logged out
+- Protected routes hidden
+- Tokens removed
+- Redirect to login
+
+### API Service
+
+**Location:** `src/api/services/authService.ts`
+
+**Methods:**
+```typescript
+// Login
+authService.login({ email, password })
+  → AuthResponse { access_token, refresh_token, token_type }
+
+// Register
+authService.register({ username, email, password })
+  → UserResponse { id, username, email, is_active, created_at, updated_at }
+
+// Get current user
+authService.getCurrentUser()
+  → UserResponse (requires Bearer token)
+
+// Logout
+authService.logout()
+  → void (backend endpoint)
+
+// Refresh token
+authService.refreshToken(refreshToken)
+  → AuthResponse { access_token, refresh_token, token_type }
+```
+
+### Security Features
+
+- ✅ **Password Hashing** - Backend uses bcrypt
+- ✅ **JWT Tokens** - Secure token-based auth
+- ✅ **Token Expiry** - Automatic session timeout
+- ✅ **Bearer Authentication** - Standard Authorization header
+- ✅ **Protected Routes** - Client-side route guards
+- ✅ **Persistent Sessions** - localStorage for convenience
+- ✅ **Auto Logout** - On token expiry or 401 errors
+- ✅ **Error Handling** - User-friendly error messages
+
+### Testing Authentication
+
+**Test Registration:**
+```bash
+1. Navigate to http://localhost:3000/register
+2. Fill form:
+   - Username: testuser
+   - Email: test@example.com
+   - Password: password123
+   - Confirm: password123
+3. Click "Sign Up"
+4. Should redirect to /login with success message
+```
+
+**Test Login:**
+```bash
+1. Navigate to http://localhost:3000/login
+2. Fill form:
+   - Email: test@example.com
+   - Password: password123
+3. Click "Sign In"
+4. Should redirect to home page
+5. AppBar shows all routes and avatar
+6. localStorage contains tokens
+7. Redux state shows isAuthenticated: true
+```
+
+**Test Protected Routes:**
+```bash
+# When not logged in:
+1. Navigate to http://localhost:3000/users
+2. Should auto-redirect to /login
+
+# When logged in:
+1. Navigate to http://localhost:3000/users
+2. Should display Users page
+```
+
+**Test Logout:**
+```bash
+1. Click Avatar in AppBar
+2. Click "Logout"
+3. Should redirect to /login
+4. Protected routes hidden
+5. localStorage cleared
+6. Redux state shows isAuthenticated: false
+```
+
+**Test Token Expiry:**
+```bash
+# Simulate expired token:
+1. Login successfully
+2. Open DevTools Console
+3. Run: localStorage.setItem('token', 'invalid.token.here')
+4. Wait 60 seconds or refresh page
+5. Should auto logout and redirect to /login
+```
+
+### Troubleshooting
+
+**Login fails with 422:**
+- Check email format (must be valid email)
+- Check password is not empty
+- Verify backend is running on port 8000
+
+**Protected routes accessible without login:**
+- Check Redux state: `auth.isAuthenticated`
+- Check localStorage for token
+- Verify ProtectedRoute wraps the route
+
+**Token expiry not working:**
+- Check useTokenExpiry hook is called in App.tsx
+- Check browser console for errors
+- Verify token has valid JWT format
+
+**401 errors on API calls:**
+- Token expired (backend: 30 min)
+- Token invalid or malformed
+- Backend not receiving Authorization header
+- Check axios interceptor is adding token
+
+### Backend Integration
+
+**Required Backend Endpoints:**
+- `POST /auth/login` - User login
+- `POST /users/` - User registration
+- `GET /auth/me` - Get current user (requires auth)
+- `POST /auth/logout` - Logout (optional)
+- `POST /auth/refresh` - Refresh access token
+
+**Backend Configuration:**
+- JWT access token: 30 minutes expiration
+- JWT refresh token: 7 days expiration
+- CORS enabled for frontend origin
+- Bearer token authentication
+
+### Future Enhancements
+
+- [ ] Refresh token rotation
+- [ ] Remember me checkbox
+- [ ] Forgot password flow
+- [ ] Email verification
+- [ ] Social login (Google, GitHub)
+- [ ] Two-factor authentication
+- [ ] Session management
+- [ ] Multiple device support
+- [ ] Password strength indicator
+- [ ] Rate limiting on login attempts
 
 ## 🌐 HTTP Client (Axios)
 

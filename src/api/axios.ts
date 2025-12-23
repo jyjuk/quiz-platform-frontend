@@ -10,7 +10,11 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log('📤 Request:', config.method?.toUpperCase(), config.url);
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    console.log('Request:', config.method?.toUpperCase(), config.url);
     return config;
   },
   (error) => {
@@ -30,6 +34,9 @@ axiosInstance.interceptors.response.use(
 
       if (error.response.status === 401) {
         console.error('Unauthorized - redirect to login');
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
       }
 
       if (error.response.status === 403) {
