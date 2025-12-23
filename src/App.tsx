@@ -11,6 +11,7 @@ import CompanyProfilePage from './pages/CompanyProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
 import ReduxTestPage from './pages/ReduxTestPage';
 import './i18n/config';
+import HealthCheckPage from './pages/HealthCheckPage';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="companies" element={<CompaniesListPage />} />
             <Route path="companies/:id" element={<CompanyProfilePage />} />
             <Route path="redux-test" element={<ReduxTestPage />} />
+            <Route path="health-check" element={<HealthCheckPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

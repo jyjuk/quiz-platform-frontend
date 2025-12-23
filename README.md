@@ -58,6 +58,10 @@ npm run format:check
 ```
 src/
 ├── api/                         # API services and HTTP clients
+│   ├── axios.ts                 # Configured Axios instance with interceptors
+│   ├── endpoints.ts             # API endpoint constants
+│   └── services/
+│       └── healthService.ts     # Health check API service axios.ts
 ├── components/                  # Reusable UI components
 │   ├── AppBar.tsx               # Navigation bar with responsive menu
 │   ├── Footer.tsx               # Application footer
@@ -589,6 +593,144 @@ Redux state will be used for:
 - UI state (modals, notifications)
 - Cached API data
 
+
+## 🌐 HTTP Client (Axios)
+
+### API Communication
+
+The application uses **Axios** for HTTP requests to the backend API:
+
+- **Centralized configuration** with base URL and timeout
+- **Request/Response interceptors** for logging and error handling
+- **Automatic JSON parsing** - no need for `.json()`
+- **Global error handling** for common HTTP errors (401, 403, 500)
+- **TypeScript types** for all API responses
+- **Service layer architecture** for organized API calls
+
+### Axios Instance Configuration
+
+**Location:** `src/api/axios.ts`
+
+**Features:**
+```typescript
+const axiosInstance = axios.create({
+  baseURL: process.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  timeout: 10000, // 10 seconds
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+```
+
+**Request Interceptor:**
+- Logs all outgoing requests
+- Can add authentication tokens automatically
+- Useful for debugging
+
+**Response Interceptor:**
+- Logs successful responses
+- Handles errors globally:
+  - 401 Unauthorized → Can redirect to login
+  - 403 Forbidden → Access denied
+  - 500+ Server Error → Server issues
+  - Network errors → Backend unavailable
+
+### API Endpoints
+
+**Location:** `src/api/endpoints.ts`
+
+Centralized constants for all API endpoints:
+```typescript
+export const API_ENDPOINTS = {
+  HEALTH: '/health',
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    // ...
+  },
+  USERS: {
+    LIST: '/users',
+    BY_ID: (id: string) => `/users/${id}`,
+    // ...
+  },
+  // ...
+};
+```
+
+### Service Layer
+
+**Location:** `src/api/services/`
+
+Organized API calls in service modules:
+
+**Health Service:**
+```typescript
+// src/api/services/healthService.ts
+export const healthService = {
+  checkHealth: async (): Promise<HealthCheckResponse> => {
+    const response = await axiosInstance.get(API_ENDPOINTS.HEALTH);
+    return response.data;
+  },
+};
+```
+
+**Usage in components:**
+```typescript
+import { healthService } from '../api/services/healthService';
+
+const data = await healthService.checkHealth();
+```
+
+### Health Check Page
+
+**URL:** `/health-check`
+
+**Features:**
+- Test connection to backend API
+- Display backend status and information
+- Show detailed error messages if connection fails
+- Troubleshooting tips for common issues
+
+**Use case:**
+- Verify backend is running
+- Test API connectivity
+- Debug connection issues
+- View backend health information
+
+### Advantages of Axios over fetch
+
+**Axios:**
+```typescript
+// ✅ Cleaner and shorter
+const { data } = await axios.get('/users');
+```
+
+**fetch:**
+```typescript
+// ❌ More verbose
+const response = await fetch('/users');
+if (!response.ok) throw new Error('Failed');
+const data = await response.json();
+```
+
+**Benefits:**
+- ✅ Automatic JSON transformation
+- ✅ Request/Response interceptors
+- ✅ Timeout support
+- ✅ Progress tracking (for uploads/downloads)
+- ✅ Request cancellation
+- ✅ Better error handling
+- ✅ CSRF protection
+- ✅ Works in older browsers
+
+### Future API Integration
+
+The Axios setup is ready for:
+- User authentication (login, register, logout)
+- CRUD operations for users and companies
+- Quiz management
+- Real-time notifications (with WebSocket upgrade)
+- File uploads (with progress tracking)
 
 ## 🐳 Docker
 
