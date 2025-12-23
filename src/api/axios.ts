@@ -14,19 +14,19 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('❌ Request Error:', error);
+    console.error('Request Error:', error);
     return Promise.reject(error);
   }
 );
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log('✅ Response:', response.status, response.config.url);
+    console.log('Response:', response.status, response.config.url);
     return response;
   },
   (error) => {
     if (error.response) {
-      console.error('❌ Response Error:', error.response.status, error.response.data);
+      console.error('Response Error:', error.response.status, error.response.data);
 
       if (error.response.status === 401) {
         console.error('Unauthorized - redirect to login');
@@ -40,9 +40,9 @@ axiosInstance.interceptors.response.use(
         console.error('Server error');
       }
     } else if (error.request) {
-      console.error('❌ Network Error - No response:', error.message);
+      console.error('Network Error - No response:', error.message);
     } else {
-      console.error('❌ Request Setup Error:', error.message);
+      console.error('Request Setup Error:', error.message);
     }
 
     return Promise.reject(error);

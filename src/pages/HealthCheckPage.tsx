@@ -72,7 +72,7 @@ const HealthCheckPage = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <CheckCircleIcon sx={{ fontSize: 40, color: 'success.dark' }} />
             <Typography variant="h5" color="success.dark">
-              Backend is Healthy! ✅
+              Backend is Healthy!
             </Typography>
           </Box>
 
@@ -111,7 +111,7 @@ const HealthCheckPage = () => {
       {error && (
         <Alert severity="error" icon={<ErrorIcon />} sx={{ mb: 3 }}>
           <Typography variant="h6" gutterBottom>
-            Health Check Failed ❌
+            Health Check Failed
           </Typography>
           <Typography variant="body2">{error}</Typography>
           <Box sx={{ mt: 2 }}>
