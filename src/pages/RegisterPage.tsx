@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Box,
@@ -14,75 +13,38 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import { useForm } from 'react-hook-form';
 import { authService } from '../api/services/authService';
+import type { RegisterRequest } from '../types/auth';
+import { useState } from 'react';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setError('');
-  };
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<RegisterRequest & { confirmPassword: string }>({
+    mode: 'onBlur',
+  });
 
-  const validateForm = () => {
-    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all fields');
-      return false;
-    }
+  const password = watch('password');
 
-    if (formData.username.length < 3) {
-      setError('Username must be at least 3 characters');
-      return false;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
-      return false;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+  const onSubmit = async (data: RegisterRequest & { confirmPassword: string }) => {
     setLoading(true);
     setError('');
 
     try {
       await authService.register({
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
+        username: data.username,
+        email: data.email,
+        password: data.password,
       });
 
       navigate('/login', {
@@ -141,43 +103,56 @@ const RegisterPage = () => {
           </Alert>
         )}
 
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
           <TextField
             fullWidth
             label="Username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
+            {...register('username', {
+              required: 'Username is required',
+              minLength: {
+                value: 3,
+                message: 'Username must be at least 3 characters',
+              },
+            })}
+            error={!!errors.username}
+            helperText={errors.username?.message}
             margin="normal"
-            required
             autoComplete="username"
             autoFocus
-            helperText="At least 3 characters"
           />
 
           <TextField
             fullWidth
             label="Email"
-            name="email"
             type="email"
-            value={formData.email}
-            onChange={handleChange}
+            {...register('email', {
+              required: 'Email is required',
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Please enter a valid email address',
+              },
+            })}
+            error={!!errors.email}
+            helperText={errors.email?.message}
             margin="normal"
-            required
             autoComplete="email"
           />
 
           <TextField
             fullWidth
             label="Password"
-            name="password"
             type={showPassword ? 'text' : 'password'}
-            value={formData.password}
-            onChange={handleChange}
+            {...register('password', {
+              required: 'Password is required',
+              minLength: {
+                value: 6,
+                message: 'Password must be at least 6 characters',
+              },
+            })}
+            error={!!errors.password}
+            helperText={errors.password?.message}
             margin="normal"
-            required
             autoComplete="new-password"
-            helperText="At least 6 characters"
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -192,12 +167,14 @@ const RegisterPage = () => {
           <TextField
             fullWidth
             label="Confirm Password"
-            name="confirmPassword"
             type={showConfirmPassword ? 'text' : 'password'}
-            value={formData.confirmPassword}
-            onChange={handleChange}
+            {...register('confirmPassword', {
+              required: 'Please confirm your password',
+              validate: (value) => value === password || 'Passwords do not match',
+            })}
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword?.message}
             margin="normal"
-            required
             autoComplete="new-password"
             InputProps={{
               endAdornment: (

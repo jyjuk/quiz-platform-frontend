@@ -17,6 +17,7 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import { useAppDispatch } from '../store/hooks';
 import { setCredentials } from '../store/slices/authSlice';
 import { authService } from '../api/services/authService';
+import type { LoginRequest } from '../types/auth';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -49,10 +50,6 @@ const LoginPage = () => {
         password: formData.password,
       });
 
-      const token = authResponse.access_token;
-
-      localStorage.setItem('token', token);
-
       const userData = await authService.getCurrentUser();
 
       dispatch(
@@ -78,8 +75,6 @@ const LoginPage = () => {
       } else {
         setError('Login failed. Please try again.');
       }
-
-      localStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
