@@ -1,11 +1,12 @@
 export const API_ENDPOINTS = {
-  HEALTH: '',
+  HEALTH: '/',
 
   AUTH: {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
     LOGOUT: '/auth/logout',
     REFRESH: '/auth/refresh',
+    ME: '/auth/me',
   },
 
   USERS: {
