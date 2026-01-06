@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import {
   Container,
   Typography,
@@ -12,7 +15,7 @@ import {
   Alert,
   Grid,
   Divider,
-  CircularProgress
+  CircularProgress,
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,8 +26,47 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { userService } from '../api/services/userService';
 import { setUser, logout } from '../store/slices/authSlice';
 import ConfirmDialog from '../components/ConfirmDialog';
-import type { UserUpdateRequest } from '../types/user';
 import { authService } from '../api/services/authService';
+
+const profileSchema = yup.object({
+  username: yup
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(50, 'Username must not exceed 50 characters')
+    .required('Username is required'),
+  first_name: yup
+    .string()
+    .max(50, 'First name must not exceed 50 characters')
+    .nullable()
+    .transform((value) => value || null),
+  last_name: yup
+    .string()
+    .max(50, 'Last name must not exceed 50 characters')
+    .nullable()
+    .transform((value) => value || null),
+  bio: yup
+    .string()
+    .max(500, 'Bio must not exceed 500 characters')
+    .nullable()
+    .transform((value) => value || null),
+  avatar_url: yup
+    .string()
+    .url('Must be a valid URL')
+    .nullable()
+    .transform((value) => value || null)
+    .optional(),
+  phone: yup
+    .string()
+    .matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/, {
+      message: 'Invalid phone number',
+      excludeEmptyString: true,
+    })
+    .nullable()
+    .transform((value) => value || null)
+    .optional(),
+});
+
+type ProfileFormData = yup.InferType<typeof profileSchema>;
 
 const MyProfilePage = () => {
   const navigate = useNavigate();
@@ -34,14 +76,6 @@ const MyProfilePage = () => {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState<UserUpdateRequest>({
-    username: user?.username || '',
-    first_name: user?.first_name || '',
-    last_name: user?.last_name || '',
-    bio: user?.bio || '',
-    avatar_url: user?.avatar_url || '',
-    phone: user?.phone || '',
-  });
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(!user);
   const [error, setError] = useState('');
@@ -49,6 +83,23 @@ const MyProfilePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ProfileFormData>({
+    resolver: yupResolver(profileSchema),
+    mode: 'onBlur',
+    defaultValues: {
+      username: user?.username || '',
+      first_name: user?.first_name || '',
+      last_name: user?.last_name || '',
+      bio: user?.bio || '',
+      avatar_url: user?.avatar_url || '',
+      phone: user?.phone || '',
+    },
+  });
 
   useEffect(() => {
     const loadUser = async () => {
@@ -83,7 +134,7 @@ const MyProfilePage = () => {
 
   useEffect(() => {
     if (user) {
-      setFormData({
+      reset({
         username: user.username,
         first_name: user.first_name || '',
         last_name: user.last_name || '',
@@ -92,24 +143,15 @@ const MyProfilePage = () => {
         phone: user.phone || '',
       });
     }
-  }, [user]);
+  }, [user, reset]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setError('');
-    setSuccess('');
-  };
-
-  const handleSave = async () => {
+  const onSubmit = async (data: ProfileFormData) => {
     setLoading(true);
     setError('');
     setSuccess('');
 
     try {
-      const updatedUser = await userService.updateOwnProfile(formData);
+      const updatedUser = await userService.updateOwnProfile(data);
       dispatch(
         setUser({
           id: updatedUser.id,
@@ -133,7 +175,7 @@ const MyProfilePage = () => {
   };
 
   const handleCancel = () => {
-    setFormData({
+    reset({
       username: user?.username || '',
       first_name: user?.first_name || '',
       last_name: user?.last_name || '',
@@ -160,7 +202,6 @@ const MyProfilePage = () => {
       setDeleteLoading(false);
     }
   };
-
 
   if (userLoading) {
     return (
@@ -220,74 +261,77 @@ const MyProfilePage = () => {
 
         <Divider sx={{ mb: 3 }} />
 
+        {/* ✅ ФОРМА ТІЛЬКИ З ПОЛЯМИ */}
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label={t('profile.username')}
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
               disabled={!editMode}
+              error={!!errors.username}
+              helperText={errors.username?.message}
+              {...register('username')}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label={t('profile.phone')}
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
               disabled={!editMode}
+              error={!!errors.phone}
+              helperText={errors.phone?.message}
+              {...register('phone')}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label={t('profile.firstName')}
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
               disabled={!editMode}
+              error={!!errors.first_name}
+              helperText={errors.first_name?.message}
+              {...register('first_name')}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label={t('profile.lastName')}
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
               disabled={!editMode}
+              error={!!errors.last_name}
+              helperText={errors.last_name?.message}
+              {...register('last_name')}
             />
           </Grid>
           <Grid item xs={12}>
             <TextField
               fullWidth
               label={t('profile.bio')}
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
               disabled={!editMode}
               multiline
               rows={4}
+              error={!!errors.bio}
+              helperText={errors.bio?.message}
+              {...register('bio')}
             />
           </Grid>
           <Grid item xs={12}>
             <TextField
               fullWidth
               label={t('profile.avatarUrl')}
-              name="avatar_url"
-              value={formData.avatar_url}
-              onChange={handleChange}
               disabled={!editMode}
+              error={!!errors.avatar_url}
+              helperText={errors.avatar_url?.message}
+              {...register('avatar_url')}
             />
           </Grid>
         </Grid>
 
-        <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
+        {/* ✅ КНОПКИ УПРАВЛІННЯ (ЗА МЕЖАМИ ФОРМИ) */}
+        <Box sx={{ mt: 4 }}>
           {!editMode ? (
-            <>
+            // VIEW MODE - Edit і Delete кнопки
+            <Box sx={{ display: 'flex', gap: 2 }}>
               <Button
                 variant="contained"
                 startIcon={<EditIcon />}
@@ -303,26 +347,30 @@ const MyProfilePage = () => {
               >
                 {t('profile.deleteButton')}
               </Button>
-            </>
+            </Box>
           ) : (
-            <>
-              <Button
-                variant="contained"
-                startIcon={<SaveIcon />}
-                onClick={handleSave}
-                disabled={loading}
-              >
-                {loading ? t('profile.saving') : t('profile.saveButton')}
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<CancelIcon />}
-                onClick={handleCancel}
-                disabled={loading}
-              >
-                {t('profile.cancelButton')}
-              </Button>
-            </>
+            // EDIT MODE - Save і Cancel кнопки в окремій формі
+            <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  startIcon={<SaveIcon />}
+                  disabled={loading}
+                >
+                  {loading ? t('profile.saving') : t('profile.saveButton')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  startIcon={<CancelIcon />}
+                  onClick={handleCancel}
+                  disabled={loading}
+                >
+                  {t('profile.cancelButton')}
+                </Button>
+              </Box>
+            </Box>
           )}
         </Box>
 

@@ -1,5 +1,7 @@
-import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import {
   Box,
   Paper,
@@ -17,42 +19,46 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import { useAppDispatch } from '../store/hooks';
 import { setCredentials, setUser } from '../store/slices/authSlice';
 import { authService } from '../api/services/authService';
+import { useState } from 'react';
+
+const loginSchema = yup.object({
+  email: yup.string().email('Invalid email format').required('Email is required'),
+  password: yup
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+});
+
+type LoginFormData = yup.InferType<typeof loginSchema>;
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setError('');
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: yupResolver(loginSchema),
+    mode: 'onBlur',
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     setError('');
 
     try {
       const authResponse = await authService.login({
-        email: formData.email,
-        password: formData.password,
+        email: data.email,
+        password: data.password,
       });
-
       localStorage.setItem('token', authResponse.access_token);
       localStorage.setItem('refreshToken', authResponse.refresh_token);
       const userData = await authService.getCurrentUser();
-
       dispatch(
         setCredentials({
           token: authResponse.access_token,
@@ -79,7 +85,6 @@ const LoginPage = () => {
 
       navigate('/');
     } catch (err: any) {
-
       if (err.response?.status === 401) {
         setError('Invalid email or password');
       } else if (err.response?.status === 403) {
@@ -95,7 +100,6 @@ const LoginPage = () => {
   };
 
   const handleSocialLogin = (provider: string) => {
-    console.log(`Login with ${provider}`);
     setError(`${provider} login coming soon!`);
   };
 
@@ -132,30 +136,28 @@ const LoginPage = () => {
           </Alert>
         )}
 
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
           <TextField
             fullWidth
             label="Email"
-            name="email"
             type="email"
-            value={formData.email}
-            onChange={handleChange}
             margin="normal"
-            required
             autoComplete="email"
             autoFocus
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            {...register('email')}
           />
 
           <TextField
             fullWidth
             label="Password"
-            name="password"
             type={showPassword ? 'text' : 'password'}
-            value={formData.password}
-            onChange={handleChange}
             margin="normal"
-            required
             autoComplete="current-password"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            {...register('password')}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">

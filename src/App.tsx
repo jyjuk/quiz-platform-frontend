@@ -37,7 +37,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-          <Route
+        <Route
           path="users"
           element={
             <ProtectedRoute>

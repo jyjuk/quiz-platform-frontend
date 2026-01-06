@@ -1,4 +1,12 @@
-import { Typography, Grid, Box, TextField, InputAdornment, CircularProgress, Alert } from '@mui/material';
+import {
+  Typography,
+  Grid,
+  Box,
+  TextField,
+  InputAdornment,
+  CircularProgress,
+  Alert,
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import PageContainer from '../components/PageContainer';
 import UserCard from '../components/UserCard';

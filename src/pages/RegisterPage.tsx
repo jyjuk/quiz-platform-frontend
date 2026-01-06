@@ -1,5 +1,7 @@
-import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import {
   Box,
   Paper,
@@ -17,57 +19,57 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import { useAppDispatch } from '../store/hooks';
 import { setCredentials, setUser } from '../store/slices/authSlice';
 import { authService } from '../api/services/authService';
+import { useState } from 'react';
+
+const registerSchema = yup.object({
+  email: yup.string().email('Invalid email format').required('Email is required'),
+  username: yup
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(50, 'Username must not exceed 50 characters')
+    .required('Username is required'),
+  password: yup
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref('password')], 'Passwords must match')
+    .required('Confirm password is required'),
+});
+
+type RegisterFormData = yup.InferType<typeof registerSchema>;
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
-  const [formData, setFormData] = useState({
-    email: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setError('');
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: yupResolver(registerSchema),
+    mode: 'onBlur',
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setLoading(false);
-      return;
-    }
-
     try {
       await authService.register({
-        email: formData.email,
-        username: formData.username,
-        password: formData.password,
+        email: data.email,
+        username: data.username,
+        password: data.password,
       });
-
       const authResponse = await authService.login({
-        email: formData.email,
-        password: formData.password,
+        email: data.email,
+        password: data.password,
       });
       localStorage.setItem('token', authResponse.access_token);
       localStorage.setItem('refreshToken', authResponse.refresh_token);
@@ -147,41 +149,38 @@ const RegisterPage = () => {
           </Alert>
         )}
 
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
           <TextField
             fullWidth
             label="Email"
-            name="email"
             type="email"
-            value={formData.email}
-            onChange={handleChange}
             margin="normal"
-            required
             autoComplete="email"
             autoFocus
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            {...register('email')}
           />
 
           <TextField
             fullWidth
             label="Username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
             margin="normal"
-            required
             autoComplete="username"
+            error={!!errors.username}
+            helperText={errors.username?.message}
+            {...register('username')}
           />
 
           <TextField
             fullWidth
             label="Password"
-            name="password"
             type={showPassword ? 'text' : 'password'}
-            value={formData.password}
-            onChange={handleChange}
             margin="normal"
-            required
             autoComplete="new-password"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            {...register('password')}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -196,13 +195,12 @@ const RegisterPage = () => {
           <TextField
             fullWidth
             label="Confirm Password"
-            name="confirmPassword"
             type={showConfirmPassword ? 'text' : 'password'}
-            value={formData.confirmPassword}
-            onChange={handleChange}
             margin="normal"
-            required
             autoComplete="new-password"
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword?.message}
+            {...register('confirmPassword')}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">

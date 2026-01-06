@@ -29,10 +29,7 @@ const UserCard = ({ user }: UserCardProps) => {
     >
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar
-            src={user.avatar_url || undefined}
-            sx={{ width: 56, height: 56, mr: 2 }}
-          >
+          <Avatar src={user.avatar_url || undefined} sx={{ width: 56, height: 56, mr: 2 }}>
             {!user.avatar_url && user.username.charAt(0).toUpperCase()}
           </Avatar>
           <Box sx={{ flex: 1 }}>
@@ -53,9 +50,7 @@ const UserCard = ({ user }: UserCardProps) => {
               size="small"
               sx={{ mb: 0.5 }}
             />
-            {user.is_superuser && (
-              <Chip label="Admin" color="primary" size="small" />
-            )}
+            {user.is_superuser && <Chip label="Admin" color="primary" size="small" />}
           </Box>
         </Box>
 
