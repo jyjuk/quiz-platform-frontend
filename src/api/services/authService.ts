@@ -17,7 +17,7 @@ export const authService = {
   },
 
   getCurrentUser: async (): Promise<UserResponse> => {
-    const response = await axiosInstance.get<UserResponse>(API_ENDPOINTS.AUTH.ME);
+    const response = await axiosInstance.get<UserResponse>(API_ENDPOINTS.USERS.ME);
     return response.data;
   },
 

@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
 
   USERS: {
     LIST: '/users',
+    ME: '/users/me',
     BY_ID: (id: string) => `/users/${id}`,
     CREATE: '/users',
     UPDATE: (id: string) => `/users/${id}`,

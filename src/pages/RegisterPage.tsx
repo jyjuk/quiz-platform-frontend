@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Box,
@@ -13,48 +14,92 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import { useForm } from 'react-hook-form';
+import { useAppDispatch } from '../store/hooks';
+import { setCredentials, setUser } from '../store/slices/authSlice';
 import { authService } from '../api/services/authService';
-import type { RegisterRequest } from '../types/auth';
-import { useState } from 'react';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
+  const [formData, setFormData] = useState({
+    email: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<RegisterRequest & { confirmPassword: string }>({
-    mode: 'onBlur',
-  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError('');
+  };
 
-  const password = watch('password');
-
-  const onSubmit = async (data: RegisterRequest & { confirmPassword: string }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setError('');
 
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+
     try {
       await authService.register({
-        username: data.username,
-        email: data.email,
-        password: data.password,
+        email: formData.email,
+        username: formData.username,
+        password: formData.password,
       });
 
-      navigate('/login', {
-        state: { message: 'Registration successful! Please log in.' },
+      const authResponse = await authService.login({
+        email: formData.email,
+        password: formData.password,
       });
+      localStorage.setItem('token', authResponse.access_token);
+      localStorage.setItem('refreshToken', authResponse.refresh_token);
+      const userData = await authService.getCurrentUser();
+      dispatch(
+        setCredentials({
+          token: authResponse.access_token,
+          refreshToken: authResponse.refresh_token,
+          user: {
+            id: userData.id,
+            username: userData.username,
+            email: userData.email,
+          },
+        })
+      );
+
+      dispatch(
+        setUser({
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          bio: userData.bio,
+          avatar_url: userData.avatar_url,
+          phone: userData.phone,
+        })
+      );
+      navigate('/');
     } catch (err: any) {
-      console.error('Registration error:', err);
-
       if (err.response?.status === 400) {
-        setError('Username or email already exists');
+        setError(err.response?.data?.detail || 'User already exists');
       } else if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else {
@@ -65,9 +110,8 @@ const RegisterPage = () => {
     }
   };
 
-  const handleSocialRegister = (provider: string) => {
-    console.log(`Register with ${provider}`);
-    setError(`${provider} registration coming soon!`);
+  const handleSocialLogin = (provider: string) => {
+    setError(`${provider} login coming soon!`);
   };
 
   return (
@@ -103,55 +147,40 @@ const RegisterPage = () => {
           </Alert>
         )}
 
-        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+        <Box component="form" onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Username"
-            {...register('username', {
-              required: 'Username is required',
-              minLength: {
-                value: 3,
-                message: 'Username must be at least 3 characters',
-              },
-            })}
-            error={!!errors.username}
-            helperText={errors.username?.message}
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
             margin="normal"
-            autoComplete="username"
+            required
+            autoComplete="email"
             autoFocus
           />
 
           <TextField
             fullWidth
-            label="Email"
-            type="email"
-            {...register('email', {
-              required: 'Email is required',
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'Please enter a valid email address',
-              },
-            })}
-            error={!!errors.email}
-            helperText={errors.email?.message}
+            label="Username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
             margin="normal"
-            autoComplete="email"
+            required
+            autoComplete="username"
           />
 
           <TextField
             fullWidth
             label="Password"
+            name="password"
             type={showPassword ? 'text' : 'password'}
-            {...register('password', {
-              required: 'Password is required',
-              minLength: {
-                value: 6,
-                message: 'Password must be at least 6 characters',
-              },
-            })}
-            error={!!errors.password}
-            helperText={errors.password?.message}
+            value={formData.password}
+            onChange={handleChange}
             margin="normal"
+            required
             autoComplete="new-password"
             InputProps={{
               endAdornment: (
@@ -167,14 +196,12 @@ const RegisterPage = () => {
           <TextField
             fullWidth
             label="Confirm Password"
+            name="confirmPassword"
             type={showConfirmPassword ? 'text' : 'password'}
-            {...register('confirmPassword', {
-              required: 'Please confirm your password',
-              validate: (value) => value === password || 'Passwords do not match',
-            })}
-            error={!!errors.confirmPassword}
-            helperText={errors.confirmPassword?.message}
+            value={formData.confirmPassword}
+            onChange={handleChange}
             margin="normal"
+            required
             autoComplete="new-password"
             InputProps={{
               endAdornment: (
@@ -198,7 +225,7 @@ const RegisterPage = () => {
             disabled={loading}
             sx={{ mt: 3, mb: 2 }}
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? 'Creating account...' : 'Sign Up'}
           </Button>
 
           <Box sx={{ textAlign: 'center', mb: 2 }}>
@@ -223,7 +250,7 @@ const RegisterPage = () => {
               fullWidth
               variant="outlined"
               startIcon={<GoogleIcon />}
-              onClick={() => handleSocialRegister('Google')}
+              onClick={() => handleSocialLogin('Google')}
             >
               Google
             </Button>
@@ -231,7 +258,7 @@ const RegisterPage = () => {
               fullWidth
               variant="outlined"
               startIcon={<GitHubIcon />}
-              onClick={() => handleSocialRegister('GitHub')}
+              onClick={() => handleSocialLogin('GitHub')}
             >
               GitHub
             </Button>

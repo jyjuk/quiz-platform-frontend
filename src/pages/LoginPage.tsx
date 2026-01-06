@@ -15,9 +15,8 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { useAppDispatch } from '../store/hooks';
-import { setCredentials } from '../store/slices/authSlice';
+import { setCredentials, setUser } from '../store/slices/authSlice';
 import { authService } from '../api/services/authService';
-import type { LoginRequest } from '../types/auth';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -50,6 +49,8 @@ const LoginPage = () => {
         password: formData.password,
       });
 
+      localStorage.setItem('token', authResponse.access_token);
+      localStorage.setItem('refreshToken', authResponse.refresh_token);
       const userData = await authService.getCurrentUser();
 
       dispatch(
@@ -63,13 +64,26 @@ const LoginPage = () => {
           },
         })
       );
+      dispatch(
+        setUser({
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          bio: userData.bio,
+          avatar_url: userData.avatar_url,
+          phone: userData.phone,
+        })
+      );
 
       navigate('/');
     } catch (err: any) {
-      console.error('Login error:', err);
 
       if (err.response?.status === 401) {
         setError('Invalid email or password');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. Please contact support.');
       } else if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else {

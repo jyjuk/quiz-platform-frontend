@@ -17,7 +17,8 @@
     "home": "Home",
     "about": "About",
     "users": "Users",
-    "companies": "Companies"
+    "companies": "Companies",
+    "profile": "Profile"
   },
   "home": {
     "title": "Quiz Platform",
@@ -112,5 +113,29 @@
   "footer": {
     "copyright": "All rights reserved.",
     "builtWith": "Built with React, TypeScript, and Material UI"
+  },
+  "profile": {
+    "title": "My Profile",
+    "username": "Username",
+    "phone": "Phone",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "bio": "Bio",
+    "avatarUrl": "Avatar URL",
+    "editButton": "Edit Profile",
+    "deleteButton": "Delete Account",
+    "saveButton": "Save Changes",
+    "cancelButton": "Cancel",
+    "saving": "Saving...",
+    "created": "Account created:",
+    "updated": "Last updated:",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Failed to update profile",
+    "deleteError": "Failed to delete profile",
+    "userNotFound": "User not found. Please login.",
+    "deleteDialogTitle": "Delete Account",
+    "deleteDialogMessage": "Are you sure you want to delete your account? This action cannot be undone.",
+    "deleteConfirm": "Delete",
+    "deleteCancel": "Cancel"
   }
 }
