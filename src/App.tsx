@@ -7,8 +7,8 @@ import AboutPage from './pages/AboutPage';
 import UsersListPage from './pages/UsersListPage';
 import UserProfilePage from './pages/UserProfilePage';
 import MyProfilePage from './pages/MyProfilePage';
-import CompaniesListPage from './pages/CompaniesListPage';
-import CompanyProfilePage from './pages/CompanyProfilePage';
+import CompaniesPage from './pages/CompaniesPage';
+import CompanyDetailsPage from './pages/CompanyDetailsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ReduxTestPage from './pages/ReduxTestPage';
 import HealthCheckPage from './pages/HealthCheckPage';
@@ -57,7 +57,7 @@ function AppRoutes() {
           path="companies"
           element={
             <ProtectedRoute>
-              <CompaniesListPage />
+              <CompaniesPage />
             </ProtectedRoute>
           }
         />
@@ -65,7 +65,7 @@ function AppRoutes() {
           path="companies/:id"
           element={
             <ProtectedRoute>
-              <CompanyProfilePage />
+              <CompanyDetailsPage />
             </ProtectedRoute>
           }
         />

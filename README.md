@@ -62,26 +62,32 @@ src/
 │   ├── endpoints.ts             # API endpoint constants
 │   └── services/
 │       ├── authService.ts       # Authentication API service
-│       └── userService.ts       # User CRUD API service
+│       ├── userService.ts       # User CRUD API service
+│       └── companyService.ts    # Company CRUD API service
 ├── components/                  # Reusable UI components
 │   ├── AppBar.tsx               # Navigation bar with auth state and user avatar
 │   ├── ConfirmDialog.tsx        # Reusable confirmation dialog
 │   ├── LanguageSwitcher.tsx     # Language selector component
 │   ├── Pagination.tsx           # Universal pagination component
-│   └── ProtectedRoute.tsx       # Route guard for authenticated routes
-├── locales/                     # Internationalization
-│   ├── en/
-│   │   └── translation.json     # English translations
-│   └── uk/
-│       └── translation.json     # Ukrainian translations
+│   ├── ProtectedRoute.tsx       # Route guard for authenticated routes
+│   ├── CreateCompanyModal.tsx   # Modal for creating new company
+│   └── EditCompanyModal.tsx     # Modal for editing company
+├── i18n/                        # Internationalization
+│   └── locales/
+│       ├── en/
+│       │   └── translation.json # English translations
+│       └── uk/
+│           └── translation.json # Ukrainian translations
 ├── pages/                       # Page components
 │   ├── HomePage.tsx             # Landing page with quick links
 │   ├── AboutPage.tsx            # Platform information
 │   ├── LoginPage.tsx            # User login with React Hook Form + Yup
 │   ├── RegisterPage.tsx         # User registration with RHF + Yup
 │   ├── MyProfilePage.tsx        # Edit/delete own profile with RHF
-│   ├── UserProfilePage.tsx      # View other user profiles
+│   ├── UserProfilePage.tsx      # View user profiles with companies list
 │   ├── UsersPage.tsx            # User list with pagination and search
+│   ├── CompaniesPage.tsx        # Companies list with pagination
+│   ├── CompanyDetailsPage.tsx   # View/edit/delete company
 │   ├── ReduxTestPage.tsx        # Redux Toolkit test demonstration
 │   ├── HealthCheckPage.tsx      # Backend health check page
 │   └── NotFoundPage.tsx         # 404 error page
@@ -91,10 +97,12 @@ src/
 │   └── slices/
 │       ├── testSlice.ts         # Test slice (demonstration)
 │       ├── authSlice.ts         # Authentication state slice
-│       └── usersSlice.ts        # Users state management
+│       ├── usersSlice.ts        # Users state management
+│       └── companiesSlice.ts    # Companies state management
 ├── types/                       # TypeScript type definitions
 │   ├── auth.ts                  # Auth types
-│   └── user.ts                  # User types with BE-5 extended fields
+│   ├── user.ts                  # User types with extended fields
+│   └── company.ts               # Company and member type
 ├── utils/                       # Helper functions
 │   └── i18n.ts                  # i18next configuration
 └── theme.ts                     # Material UI theme configuration
@@ -425,6 +433,235 @@ GET /users?skip=0&limit=10 - Get paginated users
 **API Integration:**
 ```typescript
 GET /users/:id - Get user by ID
+```
+
+### Company Management
+
+**Features:**
+-  View all public companies with pagination
+-  Create new company (authenticated users)
+-  Edit company details (owner only)
+-  Delete company (owner only)
+-  View company details page
+-  Company visibility control (public/private)
+-  Display user's companies on profile page with privacy controls
+
+**Privacy Rules:**
+- **Own profile**: Shows ALL companies (public + private)
+- **Other user's profile**: Shows ONLY public companies
+- **Unauthenticated access**: Shows ONLY public companies
+
+**Pages:**
+
+#### Companies List Page
+**URL:** `/companies`
+
+**Features:**
+- Grid view of all public companies
+- Pagination (12 companies per page)
+- Company cards with:
+  - Company name and description
+  - Public/Private visibility badge
+  - Owner badge (if viewing own company)
+  - View Details button
+- Create Company button (authenticated users)
+- Responsive grid layout
+
+**API Integration:**
+```typescript
+GET /companies?skip=0&limit=12 - Get paginated public companies
+```
+
+#### Company Details Page
+**URL:** `/companies/:id`
+
+**Features:**
+- View company information:
+  - Name, description
+  - Visibility status (Public/Private)
+  - Owner information with link to profile
+  - Created/Updated timestamps
+- Edit button (owner only)
+- Delete button with confirmation (owner only)
+- Back to Companies button
+- Loading and error states
+
+**API Integration:**
+```typescript
+GET /companies/:id - Get company by ID
+PUT /companies/:id - Update company (owner only)
+DELETE /companies/:id - Delete company (owner only)
+```
+
+#### User Profile Companies Section
+**URL:** `/users/:id` (companies section)
+
+**Features:**
+- Display user's companies on their profile
+- Grid view of companies (3 columns)
+- Company cards show:
+  - Name and description
+  - Public/Private badge
+  - Owner/Member badge
+  - View Details button
+  - Leave Company button (members only, not owner)
+- Privacy-aware display:
+  - Own profile: ALL companies visible
+  - Other profiles: ONLY public companies
+- Leave company with confirmation dialog
+
+**API Integration:**
+```typescript
+GET /users/:id/companies - Get user's companies with privacy rules
+DELETE /companies/:id/members/:userId - Leave company
+```
+
+#### Create Company Modal
+
+**Features:**
+- Modal dialog form
+- Fields:
+  - Company name (3-100 characters, required)
+  - Description (max 500 characters, required)
+  - Visibility toggle (public by default)
+- React Hook Form + Yup validation
+- Real-time error messages
+- Loading state during creation
+- Auto-refresh companies list on success
+
+**Validation:**
+```typescript
+const companySchema = yup.object({
+  name: yup.string()
+    .min(3, 'Name must be at least 3 characters')
+    .max(100, 'Name must not exceed 100 characters')
+    .required('Company name is required'),
+  description: yup.string()
+    .max(500, 'Description must not exceed 500 characters')
+    .required('Description is required'),
+  is_visible: yup.boolean().required(),
+});
+```
+
+**API Integration:**
+```typescript
+POST /companies/ - Create new company
+Body: { name, description, is_visible }
+```
+
+#### Edit Company Modal
+
+**Features:**
+- Pre-filled form with current company data
+- Same validation as Create modal
+- Visibility toggle to make company public/private
+- Save and Cancel buttons
+- Loading state during update
+- Owner-only access (403 for non-owners)
+
+**API Integration:**
+```typescript
+PUT /companies/:id - Update company details
+Body: { name?, description?, is_visible? }
+```
+
+**Components:**
+
+**CreateCompanyModal** (`src/components/CreateCompanyModal.tsx`):
+- Reusable modal for creating companies
+- Form validation with React Hook Form + Yup
+- Material UI styled components
+- Props:
+  - `open` - Modal visibility state
+  - `onClose` - Close handler
+  - `onSuccess` - Success callback after creation
+
+**EditCompanyModal** (`src/components/EditCompanyModal.tsx`):
+- Reusable modal for editing companies
+- Pre-filled with existing company data
+- Same validation as Create modal
+- Props:
+  - `open` - Modal visibility state
+  - `company` - Current company data
+  - `onClose` - Close handler
+  - `onSuccess` - Success callback after update
+
+**State Management:**
+
+**Companies Slice** (`src/store/slices/companiesSlice.ts`):
+```typescript
+{
+  companies: Company[],
+  currentCompany: Company | null,
+  loading: boolean,
+  error: string | null,
+  total: number
+}
+```
+
+**Actions:**
+- `setCompanies(companies, total)` - Set companies list
+- `setCurrentCompany(company)` - Set selected company
+- `addCompany(company)` - Add new company to list
+- `updateCompany(company)` - Update company in list
+- `removeCompany(id)` - Remove company from list
+- `setLoading(boolean)` - Set loading state
+- `setError(message)` - Set error message
+- `clearError()` - Clear error message
+
+**Types:**
+
+**Company Types** (`src/types/company.ts`):
+```typescript
+interface Company {
+  id: string;
+  name: string;
+  description: string;
+  is_visible: boolean;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CompanyMember {
+  id: string;
+  user_id: string;
+  company_id: string;
+  is_admin: boolean;
+  created_at: string;
+}
+```
+
+**API Service:**
+
+**Company Service** (`src/api/services/companyService.ts`):
+```typescript
+companyService.getAllCompanies({ skip, limit })
+companyService.getCompanyById(id)
+companyService.createCompany({ name, description, is_visible })
+companyService.updateCompany(id, { name, description, is_visible })
+companyService.deleteCompany(id)
+companyService.getUserCompanies(userId) // With privacy rules
+companyService.getCompanyMembers(id)
+companyService.removeMember(companyId, userId)
+```
+
+**Endpoints:**
+```typescript
+COMPANIES: {
+  LIST: '/companies',
+  BY_ID: (id: string) => `/companies/${id}`,
+  CREATE: '/companies',
+  UPDATE: (id: string) => `/companies/${id}`,
+  DELETE: (id: string) => `/companies/${id}`,
+  MEMBERS: (id: string) => `/companies/${id}/members`,
+  REMOVE_MEMBER: (companyId: string, userId: string) => 
+    `/companies/${companyId}/members/${userId}`,
+},
+USERS: {
+  // ... existing endpoints
+  COMPANIES: (userId: string) => `/users/${userId}/companies`,
+}
 ```
 
 ### Components
