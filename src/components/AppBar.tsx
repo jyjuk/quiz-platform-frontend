@@ -50,6 +50,7 @@ const AppBar = () => {
   const navItems = [
     { label: t('nav.home'), path: '/', icon: <HomeIcon />, public: true },
     { label: t('nav.about'), path: '/about', icon: <InfoIcon />, public: true },
+    { label: t('nav.profile'), path: '/profile', icon: <AccountCircleIcon />, public: false },
     { label: t('nav.users'), path: '/users', icon: <PeopleIcon />, public: false },
     { label: t('nav.companies'), path: '/companies', icon: <BusinessIcon />, public: false },
     { label: 'Redux Test', path: '/redux-test', icon: <CodeIcon />, public: false },

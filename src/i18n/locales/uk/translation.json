@@ -17,7 +17,8 @@
     "home": "Головна",
     "about": "Про нас",
     "users": "Користувачі",
-    "companies": "Компанії"
+    "companies": "Компанії",
+    "profile": "Профіль"
   },
   "home": {
     "title": "Платформа Квізів",
@@ -112,5 +113,29 @@
   "footer": {
     "copyright": "Всі права захищені.",
     "builtWith": "Створено на React, TypeScript та Material UI"
+  },
+  "profile": {
+    "title": "Мій профіль",
+    "username": "Ім'я користувача",
+    "phone": "Телефон",
+    "firstName": "Ім'я",
+    "lastName": "Прізвище",
+    "bio": "Про себе",
+    "avatarUrl": "URL аватара",
+    "editButton": "Редагувати профіль",
+    "deleteButton": "Видалити акаунт",
+    "saveButton": "Зберегти зміни",
+    "cancelButton": "Скасувати",
+    "saving": "Збереження...",
+    "created": "Акаунт створено:",
+    "updated": "Останнє оновлення:",
+    "updateSuccess": "Профіль успішно оновлено!",
+    "updateError": "Не вдалося оновити профіль",
+    "deleteError": "Не вдалося видалити профіль",
+    "userNotFound": "Користувача не знайдено. Будь ласка, увійдіть.",
+    "deleteDialogTitle": "Видалити акаунт",
+    "deleteDialogMessage": "Ви впевнені, що хочете видалити свій акаунт? Цю дію неможливо скасувати.",
+    "deleteConfirm": "Видалити",
+    "deleteCancel": "Скасувати"
   }
 }

@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import UsersListPage from './pages/UsersListPage';
 import UserProfilePage from './pages/UserProfilePage';
+import MyProfilePage from './pages/MyProfilePage';
 import CompaniesListPage from './pages/CompaniesListPage';
 import CompanyProfilePage from './pages/CompanyProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -28,7 +29,14 @@ function AppRoutes() {
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="about" element={<AboutPage />} />
-
+        <Route
+          path="profile"
+          element={
+            <ProtectedRoute>
+              <MyProfilePage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="users"
           element={
