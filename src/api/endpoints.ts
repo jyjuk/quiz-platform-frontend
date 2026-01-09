@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
     CREATE: '/users',
     UPDATE: (id: string) => `/users/${id}`,
     DELETE: (id: string) => `/users/${id}`,
+    COMPANIES: (id: string) => `/users/${id}/companies`,
   },
 
   COMPANIES: {
@@ -24,5 +25,9 @@ export const API_ENDPOINTS = {
     CREATE: '/companies',
     UPDATE: (id: string) => `/companies/${id}`,
     DELETE: (id: string) => `/companies/${id}`,
+    MEMBERS: (id: string) => `/companies/${id}/members`,
+    ADD_MEMBER: (id: string) => `/companies/${id}/members`,
+    REMOVE_MEMBER: (companyId: string, userId: string) =>
+      `/companies/${companyId}/members/${userId}`,
   },
 } as const;
