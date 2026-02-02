@@ -1,0 +1,48 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build artifacts
+dist
+dist-ssr
+*.local
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+
+# CI/CD
+.github
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.dev.yml
+
+# Tests
+coverage
+*.test.ts
+*.test.tsx
+
+# Documentation
+README.md
+docs
+
+# Logs
+logs
+*.log

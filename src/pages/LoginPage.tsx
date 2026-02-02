@@ -1,0 +1,224 @@
+import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  IconButton,
+  Divider,
+  Alert,
+  InputAdornment,
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import GoogleIcon from '@mui/icons-material/Google';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import { useAppDispatch } from '../store/hooks';
+import { setCredentials, setUser } from '../store/slices/authSlice';
+import { authService } from '../api/services/authService';
+import { useState } from 'react';
+
+const loginSchema = yup.object({
+  email: yup.string().email('Invalid email format').required('Email is required'),
+  password: yup
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+});
+
+type LoginFormData = yup.InferType<typeof loginSchema>;
+
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: yupResolver(loginSchema),
+    mode: 'onBlur',
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const authResponse = await authService.login({
+        email: data.email,
+        password: data.password,
+      });
+      localStorage.setItem('token', authResponse.access_token);
+      localStorage.setItem('refreshToken', authResponse.refresh_token);
+      const userData = await authService.getCurrentUser();
+      dispatch(
+        setCredentials({
+          token: authResponse.access_token,
+          refreshToken: authResponse.refresh_token,
+          user: {
+            id: userData.id,
+            username: userData.username,
+            email: userData.email,
+          },
+        })
+      );
+      dispatch(
+        setUser({
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          bio: userData.bio,
+          avatar_url: userData.avatar_url,
+          phone: userData.phone,
+        })
+      );
+
+      navigate('/');
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        setError('Invalid email or password');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. Please contact support.');
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    setError(`${provider} login coming soon!`);
+  };
+
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+        py: 4,
+      }}
+    >
+      <Paper
+        elevation={3}
+        sx={{
+          p: 4,
+          maxWidth: 450,
+          width: '100%',
+          mx: 2,
+        }}
+      >
+        <Typography variant="h4" component="h1" gutterBottom textAlign="center" color="primary">
+          Welcome Back
+        </Typography>
+        <Typography variant="body2" textAlign="center" color="text.secondary" sx={{ mb: 3 }}>
+          Sign in to your account
+        </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+          <TextField
+            fullWidth
+            label="Email"
+            type="email"
+            margin="normal"
+            autoComplete="email"
+            autoFocus
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            {...register('email')}
+          />
+
+          <TextField
+            fullWidth
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            margin="normal"
+            autoComplete="current-password"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            {...register('password')}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            size="large"
+            disabled={loading}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            {loading ? 'Signing in...' : 'Sign In'}
+          </Button>
+
+          <Box sx={{ textAlign: 'center', mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Don't have an account?{' '}
+              <Link to="/register" style={{ textDecoration: 'none' }}>
+                <Typography component="span" color="primary" sx={{ fontWeight: 600 }}>
+                  Sign Up
+                </Typography>
+              </Link>
+            </Typography>
+          </Box>
+
+          <Divider sx={{ my: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              OR
+            </Typography>
+          </Divider>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<GoogleIcon />}
+              onClick={() => handleSocialLogin('Google')}
+            >
+              Google
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<GitHubIcon />}
+              onClick={() => handleSocialLogin('GitHub')}
+            >
+              GitHub
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
+    </Box>
+  );
+};
+
+export default LoginPage;
